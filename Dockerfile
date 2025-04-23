@@ -2,17 +2,34 @@ FROM node:22-slim as builder
 
 WORKDIR /app
 
+# Copy package files first for better caching
 COPY package.json package-lock.json ./
 
 RUN npm install
 
-COPY next.config.js ./next.config.js
-COPY tsconfig.json ./tsconfig.json
+# Copy all project files instead of just selective ones
+# This ensures all config files like tailwind.config.js and postcss.config.js are included
+COPY . .
 
-COPY src ./src
-
+# Build the application
 RUN npm run build
+
+# Production stage - using standalone output
+FROM node:22-slim as runner
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+# Copy only necessary files from the build
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public
 
 EXPOSE 3000
 
-CMD [ "npm", "start" ]
+ENV PORT 3000
+# Set the hostname to listen on all interfaces
+ENV HOSTNAME "0.0.0.0"
+
+CMD ["node", "server.js"]
