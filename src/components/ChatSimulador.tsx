@@ -6,6 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Orbitron } from 'next/font/google';
 import { uploadImageToImgBB } from '@/lib/imageUpload';
+import LinkifyText from '@/components/ui/LinkifyText';
+
+// Estilos para esconder as barras de rolagem mas manter a funcionalidade
+const hideScrollbarStyle = {
+  scrollbarWidth: 'none', // Firefox
+  msOverflowStyle: 'none', // IE/Edge
+};
 
 // Add Orbitron font for space-themed headings
 const orbitron = Orbitron({ subsets: ['latin'] });
@@ -263,11 +270,24 @@ export default function ChatSimulador() {
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/70 to-transparent animate-glow-slide"></div>
         </div>
       </div>
-      <Card className="max-w-md w-full mx-auto backdrop-blur-sm bg-card/50 border border-primary/20 shadow-lg shadow-primary/10 h-[700px] flex flex-col">
+      <Card className="w-full max-w-md mx-auto border border-primary/30 shadow-lg shadow-primary/10 overflow-hidden">
         <div className="p-3 border-b border-border/50 bg-muted/20 backdrop-blur-sm rounded-t-md flex items-center justify-center">
           <h3 className={`${orbitron.className} text-sm font-medium text-primary`}>TONY AI ASSISTANT</h3>
         </div>
-        <CardContent className="flex-1 overflow-y-auto space-y-3 p-4 bg-gradient-to-b from-background/80 to-background rounded scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
+        <CardContent 
+          className="flex flex-col gap-2 p-3 h-[600px] overflow-y-auto" 
+          style={{ 
+            scrollbarWidth: 'none', 
+            msOverflowStyle: 'none' 
+          }}
+        >
+          <style jsx global>{`
+            .hide-scrollbar::-webkit-scrollbar {
+              display: none;
+              width: 0;
+              background: transparent;
+            }
+          `}</style>
           {messages.map((msg, i) => (
             <div
               key={i}
@@ -282,7 +302,7 @@ export default function ChatSimulador() {
                   <div className="text-xs text-muted-foreground">{msg.text}</div>
                 </div>
               ) : (
-                msg.text
+                <LinkifyText text={msg.text} />
               )}
             </div>
           ))}
@@ -334,8 +354,16 @@ export default function ChatSimulador() {
             onKeyDown={handleKeyPress}
             disabled={loading}
             rows={1}
-            style={{ resize: 'none', minHeight: '40px', maxHeight: '120px', overflow: 'auto' }}
-            className="flex w-full rounded-md border border-input bg-background/50 backdrop-blur-sm border-primary/30 focus:border-primary/70 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            style={{ 
+              resize: 'none', 
+              minHeight: '40px', 
+              maxHeight: '120px', 
+              overflow: 'auto',
+              scrollbarWidth: 'none', // Firefox
+              msOverflowStyle: 'none', // IE/Edge
+            }}
+            className="flex w-full rounded-md border border-input bg-background/50 backdrop-blur-sm border-primary/30 focus:border-primary/70 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 hide-scrollbar"
+
           />
           <Button 
             onClick={sendMessage} 
