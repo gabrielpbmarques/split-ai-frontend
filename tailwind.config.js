@@ -5,6 +5,20 @@ module.exports = {
   ],
   theme: {
   	extend: {
+      animation: {
+        'pulse-glow': 'pulseGlow 2s infinite',
+        'glow-slide': 'glowSlide 3s infinite linear',
+      },
+      keyframes: {
+        pulseGlow: {
+          '0%, 100%': { opacity: 0.6 },
+          '50%': { opacity: 1 },
+        },
+        glowSlide: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(100%)' },
+        },
+      },
   		borderRadius: {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
