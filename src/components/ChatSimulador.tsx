@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Orbitron } from 'next/font/google';
 import { uploadImageToImgBB } from '@/lib/imageUpload';
 import LinkifyText from '@/components/ui/LinkifyText';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
+import OrbitalLoader from './ui/orbital-loader';
 
 // Estilos para esconder as barras de rolagem mas manter a funcionalidade
 const hideScrollbarStyle = {
@@ -27,6 +29,7 @@ export default function ChatSimulador() {
   const [showImagePreview, setShowImagePreview] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isChatReady, setIsChatReady] = useState(false);
+  const [isAIThinking, setIsAIThinking] = useState(false);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
@@ -92,6 +95,7 @@ export default function ChatSimulador() {
     setMessages((prev) => [...prev, userMessage]);
     setShowImagePreview(false);
     setLoading(true);
+    setIsAIThinking(true); // Ativa a animação de pensamento
     
     try {
       // Mostrar mensagem de upload
@@ -164,12 +168,13 @@ export default function ChatSimulador() {
     } finally {
       setMediaUrl('');
       setLoading(false);
+      setIsAIThinking(false); // Desativa a animação de pensamento
     }
   };
 
   const sendMessage = async () => {
     if (!input.trim()) return;
-
+    
     const userMessage = {
       sender: 'user',
       text: input,
@@ -177,7 +182,8 @@ export default function ChatSimulador() {
     setMessages((prev) => [...prev, userMessage]);
     setInput('');
     setLoading(true);
-
+    setIsAIThinking(true); // Ativa a animação de pensamento
+    
     try {
       const response = await fetch(`${apiUrl}/whatsapp/message`, {
         method: 'POST',
@@ -200,6 +206,7 @@ export default function ChatSimulador() {
       setMessages((prev) => [...prev, { sender: 'bot', text: 'Erro ao conectar com a API.' }]);
     } finally {
       setLoading(false);
+      setIsAIThinking(false); // Desativa a animação de pensamento
     }
   };
 
@@ -218,17 +225,20 @@ export default function ChatSimulador() {
   // Phone number input screen
   if (!isChatReady) {
     return (
-      <div className="min-h-screen bg-[#0a0a1a] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-[#0a0a1a] to-[#0a0a1a] flex flex-col items-center justify-center p-4">
-        <div className="mb-6 text-center">
-          <h1 className={`${orbitron.className} text-4xl font-bold text-primary mb-1 tracking-wider`}>TONY <span className="text-white/80 text-2xl">2.0</span></h1>
-          <div className="h-0.5 w-48 bg-gradient-to-r from-transparent via-primary to-transparent mx-auto animate-pulse-glow relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/70 to-transparent animate-glow-slide"></div>
+      <div className="min-h-screen bg-background bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-background to-background flex flex-col items-center justify-center p-4 relative">
+        {/* Botão de tema no canto superior direito */}
+        <div className="absolute top-4 right-4">
+          <ThemeToggle />
+        </div>
+        <div className="mb-6 flex flex-col items-center justify-center">
+          <div className="flex items-center justify-center mb-1">
+            <OrbitalLoader isThinking={false} />
           </div>
         </div>
-        <Card className="max-w-md w-full mx-auto backdrop-blur-sm bg-card/50 border border-primary/20 shadow-lg shadow-primary/10 h-[700px] flex flex-col">
+        <Card className="max-w-md w-full mx-auto backdrop-blur-sm bg-card border border-primary/20 shadow-lg shadow-primary/10 h-[700px] flex flex-col">
           <CardContent className="flex flex-col items-center justify-center h-full gap-6">
             <div className="space-y-2 text-center">
-              <h2 className="text-2xl font-bold text-white">Simulador de Chat</h2>
+              <h2 className="text-2xl font-bold text-foreground">Simulador de Chat</h2>
               <p className="text-sm text-muted-foreground text-center">
                 Digite o número de telefone para iniciar a conversa
               </p>
@@ -263,16 +273,21 @@ export default function ChatSimulador() {
   );
 
   return (
-    <div className="min-h-screen bg-[#0a0a1a] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-[#0a0a1a] to-[#0a0a1a] flex flex-col items-center justify-center p-4">
-      <div className="mb-6 text-center">
-        <h1 className={`${orbitron.className} text-4xl font-bold text-primary mb-1 tracking-wider`}>TONY <span className="text-white/80 text-2xl">2.0</span></h1>
-        <div className="h-0.5 w-48 bg-gradient-to-r from-transparent via-primary to-transparent mx-auto animate-pulse-glow relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/70 to-transparent animate-glow-slide"></div>
+    <div className="min-h-screen bg-background bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-background to-background flex flex-col items-center justify-center p-4 relative">
+      {/* Botão de tema no canto superior direito */}
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
+      <div className="mb-6 flex flex-col items-center justify-center">
+        <div className="flex items-center justify-center mb-1" style={{ width: '160px', height: '160px', position: 'relative' }}>
+          <OrbitalLoader isThinking={isAIThinking} />
         </div>
       </div>
-      <Card className="w-full max-w-md mx-auto border border-primary/30 shadow-lg shadow-primary/10 overflow-hidden">
-        <div className="p-3 border-b border-border/50 bg-muted/20 backdrop-blur-sm rounded-t-md flex items-center justify-center">
-          <h3 className={`${orbitron.className} text-sm font-medium text-primary`}>TONY AI ASSISTANT</h3>
+      <Card className="w-full max-w-md mx-auto border border-primary/30 shadow-lg shadow-primary/10 overflow-hidden bg-card">
+        <div className="p-3 border-b border-border/50 bg-muted/20 backdrop-blur-sm rounded-t-md flex items-center justify-between">
+          <div className="w-8"></div> {/* Espaço vazio para equilibrar o layout */}
+          <h3 className={`${orbitron.className} text-sm font-medium text-primary`}>ASSISTENTE IA</h3>
+          <ThemeToggle />
         </div>
         <CardContent 
           className="flex flex-col gap-2 p-3 h-[600px] overflow-y-auto" 
@@ -293,7 +308,7 @@ export default function ChatSimulador() {
               key={i}
               className={`relative text-sm p-3 rounded-lg max-w-[80%] whitespace-pre-wrap break-words ${msg.sender === 'user'
                 ? 'bg-primary/20 border border-primary/30 text-foreground self-end ml-auto rounded-br-none'
-                : 'bg-secondary/20 border border-secondary/30 text-foreground self-start mr-auto rounded-bl-none'
+                : 'bg-muted border border-secondary/50 text-foreground self-start mr-auto rounded-bl-none dark:bg-secondary/20'
               }`}
             >
               {msg.image ? (
@@ -321,7 +336,7 @@ export default function ChatSimulador() {
               <Button 
                 onClick={() => setShowCamera(false)} 
                 variant="outline" 
-                className="border-destructive/30 hover:bg-destructive/20 text-destructive-foreground">
+                className="border-destructive/50 hover:bg-destructive/20 text-destructive dark:text-destructive-foreground">
                 Cancelar
               </Button>
               <Button onClick={captureImage} className="bg-primary hover:bg-primary/80">Capturar</Button>
@@ -338,7 +353,7 @@ export default function ChatSimulador() {
               <Button 
                 onClick={cancelImagePreview} 
                 variant="outline" 
-                className="border-destructive/30 hover:bg-destructive/20 text-destructive-foreground">
+                className="border-destructive/50 hover:bg-destructive/20 text-destructive dark:text-destructive-foreground">
                 Cancelar
               </Button>
               <Button onClick={sendImageMessage} className="bg-primary hover:bg-primary/80">Enviar</Button>

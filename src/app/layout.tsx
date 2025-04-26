@@ -11,8 +11,8 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="pt-br" className="dark">
-      <body className={`${inter.className} bg-[#0a0a1a]`}>{children}</body>
+    <html lang="pt-br" suppressHydrationWarning>
+      <body className={`${inter.className} bg-background transition-colors duration-300`}>{children}</body>
     </html>
   );
 }
