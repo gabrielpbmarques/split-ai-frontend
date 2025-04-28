@@ -9,11 +9,12 @@ interface OrbitalLoaderProps {
 
 export default function OrbitalLoader({ isThinking }: OrbitalLoaderProps) {
   const mountRef = useRef<HTMLDivElement>(null);
-  const stateRef = useRef<'idle' | 'thinking'>('idle');
+  const stateRef = useRef<'idle' | 'thinking' | 'transitioning'>('idle');
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const animationRef = useRef<number | null>(null);
   const themeRef = useRef<'light' | 'dark'>('dark');
   const elapsedTimeRef = useRef(0);
+  const transitionValueRef = useRef(0); // Value between 0-1 for smooth transitions
 
   const detectTheme = () => {
     return document.documentElement.className.includes('light') ? 'light' : 'dark';
@@ -61,7 +62,7 @@ export default function OrbitalLoader({ isThinking }: OrbitalLoaderProps) {
 
     const points: THREE.Mesh[] = [];
     // Reduzir o raio base para garantir que mesmo ao pulsar, a órbita não ultrapasse os limites
-    const baseOrbitRadius = 18;
+    const baseOrbitRadius = 27;
     const numPoints = 480;
 
     const pointsGroup = new THREE.Group();
@@ -103,18 +104,37 @@ export default function OrbitalLoader({ isThinking }: OrbitalLoaderProps) {
 
       const state = stateRef.current;
       elapsedTimeRef.current += 0.05;
+      
+      // Handle transition state
+      if (state === 'transitioning') {
+        // Gradually decrease transition value for smooth fade-out
+        transitionValueRef.current = Math.max(0, transitionValueRef.current - 0.02);
+        
+        // If transition complete, change to idle state
+        if (transitionValueRef.current <= 0) {
+          stateRef.current = 'idle';
+        }
+      } else if (state === 'thinking') {
+        // Ensure transition value is at maximum when in thinking state
+        transitionValueRef.current = 1;
+      }
 
       let dynamicOrbitRadius = baseOrbitRadius;
-      // Ajustar a forma como a pulsação funciona para garantir que fique dentro dos limites
-      if (state === 'thinking') {
+      // Apply pulsation based on transition value
+      if (state === 'thinking' || state === 'transitioning') {
         const pulse = Math.pow(Math.abs(Math.sin(elapsedTimeRef.current * 1)), 3);
-        // Reduzir a amplitude máxima da pulsação
-        dynamicOrbitRadius = baseOrbitRadius + pulse * 2.5;
+        // Scale the pulse effect by the transition value for smooth fade-out
+        dynamicOrbitRadius = baseOrbitRadius + pulse * 3.5 * transitionValueRef.current;
       }
 
       points.forEach(point => {
         const { phi, speed } = point.userData;
-        point.userData.theta += speed;
+        // Adjust speed based on state - faster in thinking mode, slower in transitioning
+        const currentSpeed = state === 'thinking' ? speed : 
+                            state === 'transitioning' ? speed * (0.5 + transitionValueRef.current * 0.5) : 
+                            speed * 0.5;
+        
+        point.userData.theta += currentSpeed;
 
         point.position.set(
           dynamicOrbitRadius * Math.sin(phi) * Math.cos(point.userData.theta),
@@ -157,7 +177,15 @@ export default function OrbitalLoader({ isThinking }: OrbitalLoaderProps) {
   }, []);
 
   useEffect(() => {
-    stateRef.current = isThinking ? 'thinking' : 'idle';
+    // If transitioning from thinking to idle, use transitioning state for smooth fade-out
+    if (isThinking) {
+      stateRef.current = 'thinking';
+      transitionValueRef.current = 1; // Set to full intensity
+    } else if (stateRef.current === 'thinking') {
+      stateRef.current = 'transitioning'; // Start transition
+      // transitionValueRef will be gradually decreased in the animation loop
+    }
+    
     themeRef.current = detectTheme();
   }, [isThinking]);
 

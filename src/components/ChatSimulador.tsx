@@ -172,6 +172,47 @@ export default function ChatSimulador() {
     }
   };
 
+  // Function to remove JSON blocks from the AI response
+  const removeJsonBlocks = (text) => {
+    if (!text) return text;
+    
+    // First try to handle the specific format from the example
+    // This matches the exact pattern we've seen in the example
+    const specificJsonPattern = /```json\s*\{[\s\S]*?\}\s*```|\{\s*"invalid_fields"[\s\S]*?"status":\s*"[^"]*"\s*\}/g;
+    
+    // Apply the specific pattern first
+    let cleanedText = text.replace(specificJsonPattern, '');
+    
+    // If that didn't change anything, try more general approaches
+    if (cleanedText === text) {
+      // Regular expression to match JSON blocks in code fences
+      const jsonCodeBlockRegex = /```json\s*([\s\S]*?)\s*```/g;
+      
+      // Regular expression to match standalone JSON objects
+      // This is a more general pattern that looks for balanced braces
+      const standaloneJsonRegex = /\{(?:[^{}]|\{[^{}]*\})*\}/g;
+      
+      // First remove JSON blocks in code fences
+      cleanedText = text.replace(jsonCodeBlockRegex, '');
+      
+      // Then try to identify and remove standalone JSON objects
+      // But only if they look like our metadata format
+      cleanedText = cleanedText.replace(standaloneJsonRegex, (match) => {
+        // Only remove if it looks like our metadata
+        if (match.includes('"invalid_fields"') || 
+            match.includes('"fieldstoupdate"') || 
+            match.includes('"registrationstage"') || 
+            match.includes('"status"')) {
+          return '';
+        }
+        return match; // Keep other JSON-like structures
+      });
+    }
+    
+    // Clean up any extra whitespace and return
+    return cleanedText.trim();
+  };
+
   const sendMessage = async () => {
     if (!input.trim()) return;
     
@@ -197,9 +238,13 @@ export default function ChatSimulador() {
 
       const data = await response.json();
       if (data.sessionId && !sessionId) setSessionId(data.sessionId);
+      
+      // Clean the message by removing any JSON blocks
+      const cleanedMessage = removeJsonBlocks(data.message || '[Sem resposta da IA]');
+      
       const botMessage = {
         sender: 'bot',
-        text: data.message || '[Sem resposta da IA]',
+        text: cleanedMessage,
       };
       setMessages((prev) => [...prev, botMessage]);
     } catch (error) {
