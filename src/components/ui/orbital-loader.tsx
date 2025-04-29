@@ -43,8 +43,8 @@ export default function OrbitalLoader({ isThinking }: OrbitalLoaderProps) {
     });
     rendererRef.current = renderer;
 
-    const width = 160;
-    const height = 160;
+    const width = 1080;
+    const height = 1080;
     renderer.setSize(width, height);
     renderer.setClearColor(0x000000, 0);
 

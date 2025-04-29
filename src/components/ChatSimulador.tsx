@@ -30,8 +30,10 @@ export default function ChatSimulador() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isChatReady, setIsChatReady] = useState(false);
   const [isAIThinking, setIsAIThinking] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+  const dropZoneRef = useRef(null);
 
   // Get API URL from environment variable
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
@@ -65,52 +67,52 @@ export default function ChatSimulador() {
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      
+
       // Converter a imagem do canvas para um data URL (formato base64)
       // Usando qualidade 0.7 para JPEG para equilibrar qualidade e tamanho
       const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
       setMediaUrl(dataUrl);
-      
+
       // Parar a câmera
       video.srcObject.getTracks().forEach((track) => track.stop());
       setShowCamera(false);
       setShowImagePreview(true);
     }
   };
-  
+
   const cancelImagePreview = () => {
     setMediaUrl('');
     setShowImagePreview(false);
   };
-  
+
   const sendImageMessage = async () => {
     if (!mediaUrl) return;
-    
+
     const userMessage = {
       sender: 'user',
       text: '[imagem enviada]',
       image: mediaUrl
     };
-    
+
     setMessages((prev) => [...prev, userMessage]);
     setShowImagePreview(false);
     setLoading(true);
     setIsAIThinking(true); // Ativa a animação de pensamento
-    
+
     try {
       // Mostrar mensagem de upload
-      setMessages((prev) => [...prev, { 
-        sender: 'bot', 
-        text: 'Fazendo upload da imagem...' 
+      setMessages((prev) => [...prev, {
+        sender: 'bot',
+        text: 'Fazendo upload da imagem...'
       }]);
-      
+
       // Fazer upload da imagem para o ImgBB
       const uploadResult = await uploadImageToImgBB(mediaUrl);
-      
+
       if (!uploadResult.success) {
         throw new Error(uploadResult.error || 'Falha ao fazer upload da imagem');
       }
-      
+
       // Atualizar a mensagem de status
       setMessages((prev) => {
         const newMessages = [...prev];
@@ -121,10 +123,10 @@ export default function ChatSimulador() {
         };
         return newMessages;
       });
-      
+
       // Usar a URL retornada pelo ImgBB
       const imageUrl = uploadResult.display_url || uploadResult.url;
-      
+
       // Enviar a URL da imagem para a API
       const response = await fetch(`${apiUrl}/whatsapp/message`, {
         method: 'POST',
@@ -146,7 +148,7 @@ export default function ChatSimulador() {
       setMessages((prev) => [...prev, botMessage]);
     } catch (error) {
       console.error('Erro ao enviar imagem:', error);
-      
+
       // Atualizar a mensagem de status ou adicionar nova mensagem de erro
       setMessages((prev) => {
         const newMessages = [...prev];
@@ -175,47 +177,47 @@ export default function ChatSimulador() {
   // Function to remove JSON blocks from the AI response
   const removeJsonBlocks = (text) => {
     if (!text) return text;
-    
+
     // First try to handle the specific format from the example
     // This matches the exact pattern we've seen in the example
     const specificJsonPattern = /```json\s*\{[\s\S]*?\}\s*```|\{\s*"invalid_fields"[\s\S]*?"status":\s*"[^"]*"\s*\}/g;
-    
+
     // Apply the specific pattern first
     let cleanedText = text.replace(specificJsonPattern, '');
-    
+
     // If that didn't change anything, try more general approaches
     if (cleanedText === text) {
       // Regular expression to match JSON blocks in code fences
       const jsonCodeBlockRegex = /```json\s*([\s\S]*?)\s*```/g;
-      
+
       // Regular expression to match standalone JSON objects
       // This is a more general pattern that looks for balanced braces
       const standaloneJsonRegex = /\{(?:[^{}]|\{[^{}]*\})*\}/g;
-      
+
       // First remove JSON blocks in code fences
       cleanedText = text.replace(jsonCodeBlockRegex, '');
-      
+
       // Then try to identify and remove standalone JSON objects
       // But only if they look like our metadata format
       cleanedText = cleanedText.replace(standaloneJsonRegex, (match) => {
         // Only remove if it looks like our metadata
-        if (match.includes('"invalid_fields"') || 
-            match.includes('"fieldstoupdate"') || 
-            match.includes('"registrationstage"') || 
-            match.includes('"status"')) {
+        if (match.includes('"invalid_fields"') ||
+          match.includes('"fieldstoupdate"') ||
+          match.includes('"registrationstage"') ||
+          match.includes('"status"')) {
           return '';
         }
         return match; // Keep other JSON-like structures
       });
     }
-    
+
     // Clean up any extra whitespace and return
     return cleanedText.trim();
   };
 
   const sendMessage = async () => {
     if (!input.trim()) return;
-    
+
     const userMessage = {
       sender: 'user',
       text: input,
@@ -224,7 +226,7 @@ export default function ChatSimulador() {
     setInput('');
     setLoading(true);
     setIsAIThinking(true); // Ativa a animação de pensamento
-    
+
     try {
       const response = await fetch(`${apiUrl}/whatsapp/message`, {
         method: 'POST',
@@ -238,10 +240,10 @@ export default function ChatSimulador() {
 
       const data = await response.json();
       if (data.sessionId && !sessionId) setSessionId(data.sessionId);
-      
+
       // Clean the message by removing any JSON blocks
       const cleanedMessage = removeJsonBlocks(data.message || '[Sem resposta da IA]');
-      
+
       const botMessage = {
         sender: 'bot',
         text: cleanedMessage,
@@ -266,40 +268,72 @@ export default function ChatSimulador() {
       sendMessage();
     }
   };
-  
+
+  // Função para processar imagens arrastadas e soltas
+  const handleImageDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      
+      // Verificar se o arquivo é uma imagem
+      if (!file.type.startsWith('image/')) {
+        alert('Por favor, arraste apenas arquivos de imagem.');
+        return;
+      }
+      
+      // Limite de tamanho (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('A imagem é muito grande. O tamanho máximo é 5MB.');
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setMediaUrl(event.target.result.toString());
+          setShowImagePreview(true);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   // Phone number input screen
   if (!isChatReady) {
     return (
-      <div className="min-h-screen bg-background bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-background to-background flex flex-col items-center justify-center p-4 relative">
+      <div className="min-h-screen bg-background bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-background to-background flex flex-col items-center justify-center p-4 md:p-6 relative overflow-hidden">
         {/* Botão de tema no canto superior direito */}
         <div className="absolute top-4 right-4">
           <ThemeToggle />
         </div>
-        <div className="mb-6 flex flex-col items-center justify-center">
-          <div className="flex items-center justify-center mb-1">
+        <div className="mb-6 md:mb-10 flex flex-col items-center justify-center">
+          <div className="flex items-center justify-center mb-1" style={{ transform: 'scale(1.2)', margin: '0 auto' }}>
             <OrbitalLoader isThinking={false} />
           </div>
         </div>
-        <Card className="max-w-md w-full mx-auto backdrop-blur-sm bg-card border border-primary/20 shadow-lg shadow-primary/10 h-[700px] flex flex-col">
-          <CardContent className="flex flex-col items-center justify-center h-full gap-6">
+        <Card style={{ display: 'flex', justifyContent: 'center' }} className="w-full max-w-md md:max-w-xl lg:max-w-2xl mx-auto backdrop-blur-sm bg-card border border-primary/20 shadow-lg shadow-primary/10 max-h-[90vh] min-h-[500px] flex flex-col">
+          <CardContent className="flex flex-col items-center justify-center h-full gap-8 py-12">
             <div className="space-y-2 text-center">
               <h2 className="text-2xl font-bold text-foreground">Simulador de Chat</h2>
               <p className="text-sm text-muted-foreground text-center">
                 Digite o número de telefone para iniciar a conversa
               </p>
             </div>
-            <div className="relative w-full max-w-[80%]">
+            <div className="relative w-full max-w-[80%] md:max-w-[60%]">
               <Input
                 placeholder="Digite o número (apenas dígitos)"
                 value={phoneNumber}
                 onChange={handlePhoneNumberChange}
-                className="bg-background/50 backdrop-blur-sm border-primary/30 focus:border-primary/70"
+                className="bg-background/50 backdrop-blur-sm border-primary/30 focus:border-primary/70 md:py-6 md:text-lg"
                 onKeyPress={(e) => e.key === 'Enter' && startChat()}
               />
             </div>
-            <Button 
-              onClick={startChat} 
-              className="bg-primary hover:bg-primary/80 text-white font-medium px-6">
+            <Button
+              onClick={startChat}
+              className="bg-primary hover:bg-primary/80 text-white font-medium px-6 py-2 md:py-3 md:text-lg">
               Iniciar Chat
             </Button>
           </CardContent>
@@ -318,28 +352,45 @@ export default function ChatSimulador() {
   );
 
   return (
-    <div className="min-h-screen bg-background bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-background to-background flex flex-col items-center justify-center p-4 relative">
+    <div className="min-h-screen bg-background bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-background to-background flex flex-col items-center justify-center p-4 md:p-6 relative overflow-hidden">
       {/* Botão de tema no canto superior direito */}
       <div className="absolute top-4 right-4">
         <ThemeToggle />
       </div>
-      <div className="mb-6 flex flex-col items-center justify-center">
-        <div className="flex items-center justify-center mb-1" style={{ width: '160px', height: '160px', position: 'relative' }}>
+      <div className="mb-6 md:mb-10 flex flex-col items-center justify-center">
+        <div className="flex items-center justify-center mb-1" style={{ transform: 'scale(1.2)', margin: '0 auto' }}>
           <OrbitalLoader isThinking={isAIThinking} />
         </div>
       </div>
-      <Card className="w-full max-w-md mx-auto border border-primary/30 shadow-lg shadow-primary/10 overflow-hidden bg-card">
-        <div className="p-3 border-b border-border/50 bg-muted/20 backdrop-blur-sm rounded-t-md flex items-center justify-between">
+      <Card className="w-full max-w-md md:max-w-xl lg:max-w-3xl xl:max-w-4xl mx-auto border border-primary/30 shadow-lg shadow-primary/10 overflow-hidden bg-card h-[600px] md:h-[700px] lg:h-[750px] flex flex-col">
+        <div className="p-3 md:p-4 border-b border-border/50 bg-muted/20 backdrop-blur-sm rounded-t-md flex items-center justify-between">
           <div className="w-8"></div> {/* Espaço vazio para equilibrar o layout */}
-          <h3 className={`${orbitron.className} text-sm font-medium text-primary`}>ASSISTENTE IA</h3>
+          <h3 className={`${orbitron.className} text-sm md:text-base font-medium text-primary tracking-wider`}>ASSISTENTE IA</h3>
           <ThemeToggle />
         </div>
         <CardContent 
-          className="flex flex-col gap-2 p-3 h-[600px] overflow-y-auto" 
-          style={{ 
-            scrollbarWidth: 'none', 
-            msOverflowStyle: 'none' 
+          ref={dropZoneRef}
+          className={`flex flex-col gap-2 p-3 md:p-5 flex-grow overflow-y-auto ${isDragging ? 'bg-primary/10 border-2 border-dashed border-primary/50' : ''}`}
+          style={{
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            flex: '1 1 auto',
+            height: '0px', // Isso força o container a não crescer além do flex
+            transition: 'background-color 0.2s, border 0.2s'
           }}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setIsDragging(true);
+          }}
+          onDragEnter={(e) => {
+            e.preventDefault();
+            setIsDragging(true);
+          }}
+          onDragLeave={(e) => {
+            e.preventDefault();
+            setIsDragging(false);
+          }}
+          onDrop={handleImageDrop}
         >
           <style jsx global>{`
             .hide-scrollbar::-webkit-scrollbar {
@@ -351,14 +402,14 @@ export default function ChatSimulador() {
           {messages.map((msg, i) => (
             <div
               key={i}
-              className={`relative text-sm p-3 rounded-lg max-w-[80%] whitespace-pre-wrap break-words ${msg.sender === 'user'
+              className={`relative text-sm md:text-base p-3 md:p-4 rounded-lg max-w-[80%] md:max-w-[75%] whitespace-pre-wrap break-words ${msg.sender === 'user'
                 ? 'bg-primary/20 border border-primary/30 text-foreground self-end ml-auto rounded-br-none'
                 : 'bg-muted border border-secondary/50 text-foreground self-start mr-auto rounded-bl-none dark:bg-secondary/20'
-              }`}
+                }`}
             >
               {msg.image ? (
                 <div className="space-y-2">
-                  <img src={msg.image} alt="Imagem enviada" className="max-w-full h-auto rounded" style={{ maxHeight: '200px' }} />
+                  <img src={msg.image} alt="Imagem enviada" className="max-w-full h-auto rounded" style={{ maxHeight: '200px', maxWidth: '100%' }} />
                   <div className="text-xs text-muted-foreground">{msg.text}</div>
                 </div>
               ) : (
@@ -367,20 +418,22 @@ export default function ChatSimulador() {
             </div>
           ))}
           {loading && (
-            <div className="bg-secondary/20 border border-secondary/30 text-foreground self-start mr-auto rounded-lg rounded-bl-none p-3 max-w-[80%]">
+            <div className="bg-secondary/20 border border-secondary/30 text-foreground self-start mr-auto rounded-lg rounded-bl-none p-3 md:p-4 max-w-[80%] md:max-w-[75%]">
               <LoadingAnimation />
             </div>
           )}
         </CardContent>
 
         {showCamera && (
-          <div className="flex flex-col items-center gap-2 p-2 border-t border-border/50 bg-muted/20">
-            <video ref={videoRef} autoPlay className="w-full rounded-md" />
+          <div className="flex flex-col items-center gap-2 p-2 border-t border-border/50 bg-muted/20 max-h-[40vh]">
+            <div className="w-full h-full overflow-hidden flex items-center justify-center">
+              <video ref={videoRef} autoPlay className="w-full max-h-[30vh] object-contain rounded-md" />
+            </div>
             <canvas ref={canvasRef} className="hidden" />
             <div className="flex gap-2 w-full justify-center">
-              <Button 
-                onClick={() => setShowCamera(false)} 
-                variant="outline" 
+              <Button
+                onClick={() => setShowCamera(false)}
+                variant="outline"
                 className="border-destructive/50 hover:bg-destructive/20 text-destructive dark:text-destructive-foreground">
                 Cancelar
               </Button>
@@ -388,16 +441,16 @@ export default function ChatSimulador() {
             </div>
           </div>
         )}
-        
+
         {showImagePreview && mediaUrl && (
-          <div className="flex flex-col items-center gap-2 p-2 border-t border-border/50 bg-muted/20">
-            <div className="relative w-full">
-              <img src={mediaUrl} alt="Preview" className="w-full rounded-md" style={{ maxHeight: '300px', objectFit: 'contain' }} />
+          <div className="flex flex-col items-center gap-2 p-2 border-t border-border/50 bg-muted/20 max-h-[40vh]">
+            <div className="w-full h-full overflow-hidden flex items-center justify-center">
+              <img src={mediaUrl} alt="Preview" className="rounded-md max-h-[30vh]" style={{ maxWidth: '100%', objectFit: 'contain' }} />
             </div>
             <div className="flex gap-2 w-full justify-center">
-              <Button 
-                onClick={cancelImagePreview} 
-                variant="outline" 
+              <Button
+                onClick={cancelImagePreview}
+                variant="outline"
                 className="border-destructive/50 hover:bg-destructive/20 text-destructive dark:text-destructive-foreground">
                 Cancelar
               </Button>
@@ -406,7 +459,7 @@ export default function ChatSimulador() {
           </div>
         )}
 
-        <div className="flex items-center p-3 border-t border-border/50 bg-muted/20 backdrop-blur-sm gap-2 rounded-b-md">
+        <div className="flex items-center p-3 md:p-5 border-t border-border/50 bg-muted/20 backdrop-blur-sm gap-2 md:gap-3 rounded-b-md">
           <textarea
             placeholder="Digite sua mensagem..."
             value={input}
@@ -414,27 +467,26 @@ export default function ChatSimulador() {
             onKeyDown={handleKeyPress}
             disabled={loading}
             rows={1}
-            style={{ 
-              resize: 'none', 
-              minHeight: '40px', 
-              maxHeight: '120px', 
+            style={{
+              resize: 'none',
+              minHeight: '45px',
+              maxHeight: '80px',
               overflow: 'auto',
               scrollbarWidth: 'none', // Firefox
               msOverflowStyle: 'none', // IE/Edge
             }}
-            className="flex w-full rounded-md border border-input bg-background/50 backdrop-blur-sm border-primary/30 focus:border-primary/70 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 hide-scrollbar"
-
+            className="flex w-full rounded-md border border-input bg-background/50 backdrop-blur-sm border-primary/30 focus:border-primary/70 px-3 py-2 text-sm md:text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 hide-scrollbar"
           />
-          <Button 
-            onClick={sendMessage} 
+          <Button
+            onClick={sendMessage}
             disabled={loading}
-            className="bg-primary hover:bg-primary/80 text-white">
+            className="bg-primary hover:bg-primary/80 text-white whitespace-nowrap md:px-6 md:py-5 md:text-base">
             Enviar
           </Button>
-          <Button 
-            onClick={startCamera} 
-            variant="outline" 
-            className="border-primary/30 hover:bg-primary/20">
+          <Button
+            onClick={startCamera}
+            variant="outline"
+            className="border-primary/30 hover:bg-primary/20 md:px-4 md:py-5 md:text-base">
             📷
           </Button>
         </div>
