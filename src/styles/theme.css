@@ -1,0 +1,210 @@
+/* Tema personalizado para o Chat Simulador */
+
+:root {
+  /* Paleta principal enriquecida */
+  --background: 210 20% 98%;
+  --foreground: 224 71% 4%;
+  --card: 0 0% 100%;
+  --card-foreground: 224 71% 4%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 224 71% 4%;
+  --primary: 221 83% 53%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 250 95% 76%;
+  --secondary-foreground: 222 47% 11%;
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215 16% 47%;
+  --accent: 262 83% 58%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 221 83% 53%;
+  
+  /* Cores para gráficos e visualizações */
+  --chart-1: 221 83% 53%;
+  --chart-2: 262 83% 58%;
+  --chart-3: 191 97% 77%;
+  --chart-4: 43 96% 56%;
+  --chart-5: 0 84% 60%;
+  
+  /* Sombras refinadas */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 1px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+  
+  /* Efeitos de vidro */
+  --glass-background: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  
+  --radius: 0.5rem
+}
+
+.dark {
+  /* Paleta escura enriquecida */
+  --background: 222 47% 11%;
+  --foreground: 210 40% 98%;
+  --card: 222 47% 8%;
+  --card-foreground: 210 40% 98%;
+  --popover: 222 47% 8%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 217 91% 60%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 250 95% 76%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217 33% 17%;
+  --muted-foreground: 215 20% 65%;
+  --accent: 262 83% 58%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 62% 30%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 217 33% 20%;
+  --input: 217 33% 17%;
+  --ring: 224 76% 48%;
+  
+  /* Cores para gráficos e visualizações */
+  --chart-1: 217 91% 60%;
+  --chart-2: 262 83% 58%;
+  --chart-3: 191 97% 77%;
+  --chart-4: 43 96% 56%;
+  --chart-5: 0 84% 60%;
+  
+  /* Sombras refinadas para tema escuro */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 1px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+  
+  /* Efeitos de vidro para tema escuro */
+  --glass-background: rgba(17, 24, 39, 0.7);
+  --glass-border: rgba(17, 24, 39, 0.5);
+  --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Estilos para o fundo com gradientes sutis */
+body {
+  background-image: 
+    radial-gradient(circle at 100% 0%, hsla(var(--primary) / 0.05) 0%, transparent 60%),
+    radial-gradient(circle at 0% 100%, hsla(var(--secondary) / 0.05) 0%, transparent 60%);
+  background-attachment: fixed;
+}
+
+/* Melhorias de tipografia */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+/* Estilos para links */
+a {
+  color: hsl(var(--primary));
+  transition: color 0.2s ease;
+}
+a:hover {
+  color: hsl(var(--primary) / 0.8);
+}
+
+/* Efeitos de vidro (glassmorphism) */
+.glass {
+  background: var(--glass-background);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+/* Efeitos de sombra */
+.shadow-sm {
+  box-shadow: var(--shadow-sm);
+}
+.shadow-md {
+  box-shadow: var(--shadow-md);
+}
+.shadow-lg {
+  box-shadow: var(--shadow-lg);
+}
+.shadow-xl {
+  box-shadow: var(--shadow-xl);
+}
+
+/* Esconder scrollbar mas manter funcionalidade */
+.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Animações e transições */
+.transition-all {
+  transition: all 0.2s ease;
+}
+
+/* Gradientes de texto */
+.text-gradient {
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.gradient-primary {
+  background-image: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+}
+
+/* Botões com efeito de hover melhorado */
+.btn-enhanced {
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.btn-enhanced::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, hsla(var(--primary) / 0.2), hsla(var(--accent) / 0.2));
+  z-index: -1;
+  transition: opacity 0.3s ease;
+  opacity: 0;
+}
+
+.btn-enhanced:hover::before {
+  opacity: 1;
+}
+
+/* Cartões com efeito de profundidade */
+.card-depth {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-depth:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Animação de pulso para elementos de loading */
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0.6;
+    transform: scale(0.98);
+  }
+}
+
+.animate-pulse-subtle {
+  animation: pulse 1.5s infinite;
+}

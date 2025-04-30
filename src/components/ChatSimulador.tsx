@@ -10,13 +10,7 @@ import LinkifyText from '@/components/ui/LinkifyText';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import OrbitalLoader from './ui/orbital-loader';
 
-// Estilos para esconder as barras de rolagem mas manter a funcionalidade
-const hideScrollbarStyle = {
-  scrollbarWidth: 'none', // Firefox
-  msOverflowStyle: 'none', // IE/Edge
-};
-
-// Add Orbitron font for space-themed headings
+// Orbitron font para títulos com estilo espacial
 const orbitron = Orbitron({ subsets: ['latin'] });
 
 export default function ChatSimulador() {
@@ -34,9 +28,52 @@ export default function ChatSimulador() {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const dropZoneRef = useRef(null);
+  const messagesEndRef = useRef(null);
 
   // Get API URL from environment variable
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+
+  // Scroll para o final da conversa quando novas mensagens são adicionadas
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
+    }
+  }, [messages, loading]);
+
+  // Configurar event listeners para drag and drop
+  useEffect(() => {
+    const handleDragOver = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragging(true);
+    };
+
+    const handleDragLeave = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragging(false);
+    };
+
+    const handleDrop = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragging(false);
+      handleImageDrop(e);
+    };
+
+    if (dropZoneRef.current) {
+      const dropZone = dropZoneRef.current;
+      dropZone.addEventListener('dragover', handleDragOver);
+      dropZone.addEventListener('dragleave', handleDragLeave);
+      dropZone.addEventListener('drop', handleDrop);
+
+      return () => {
+        dropZone.removeEventListener('dragover', handleDragOver);
+        dropZone.removeEventListener('dragleave', handleDragLeave);
+        dropZone.removeEventListener('drop', handleDrop);
+      };
+    }
+  }, [dropZoneRef.current]);
 
   const handlePhoneNumberChange = (e) => {
     // Only allow digits in the phone number
@@ -119,228 +156,225 @@ export default function ChatSimulador() {
         // Substituir a última mensagem (que era a de upload)
         newMessages[newMessages.length - 1] = {
           sender: 'bot',
-          text: 'Upload concluído! Enviando para processamento...',
+          text: 'Processando sua imagem...'
         };
         return newMessages;
       });
 
-      // Usar a URL retornada pelo ImgBB
-      const imageUrl = uploadResult.display_url || uploadResult.url;
-
       // Enviar a URL da imagem para a API
       const response = await fetch(`${apiUrl}/whatsapp/message`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
+          message: '[IMAGEM]',
+          sessionId: sessionId || null,
           phoneNumber,
-          message: '',
-          sessionId: sessionId || undefined,
-          mediaUrl: imageUrl, // Usar a URL do ImgBB em vez do base64
+          mediaUrl: uploadResult.url
         }),
       });
 
-      const data = await response.json();
-      if (data.sessionId && !sessionId) setSessionId(data.sessionId);
-      const botMessage = {
-        sender: 'bot',
-        text: data.message || '[Sem resposta da IA]',
-      };
-      setMessages((prev) => [...prev, botMessage]);
-    } catch (error) {
-      console.error('Erro ao enviar imagem:', error);
+      if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status}`);
+      }
 
-      // Atualizar a mensagem de status ou adicionar nova mensagem de erro
+      const data = await response.json();
+
+      // Atualizar o sessionId se for a primeira mensagem
+      if (!sessionId && data.sessionId) {
+        setSessionId(data.sessionId);
+      }
+
+      // Remover a mensagem de status e adicionar a resposta da API
       setMessages((prev) => {
         const newMessages = [...prev];
-        // Se a última mensagem for do bot (mensagem de status), substituir
-        if (newMessages.length > 0 && newMessages[newMessages.length - 1].sender === 'bot') {
-          newMessages[newMessages.length - 1] = {
-            sender: 'bot',
-            text: `Erro: ${error.message || 'Falha ao processar a imagem'}`
-          };
-        } else {
-          // Caso contrário, adicionar nova mensagem
-          newMessages.push({
-            sender: 'bot',
-            text: `Erro: ${error.message || 'Falha ao processar a imagem'}`
-          });
-        }
+        // Remover a última mensagem (que era a de processamento)
+        newMessages.pop();
+        
+        // Adicionar a resposta da API
+        newMessages.push({
+          sender: 'bot',
+          text: data.message || 'Não foi possível processar sua imagem.'
+        });
+        return newMessages;
+      });
+    } catch (error) {
+      console.error('Erro ao enviar imagem:', error);
+      
+      // Atualizar a mensagem de erro
+      setMessages((prev) => {
+        const newMessages = [...prev];
+        // Substituir a última mensagem com o erro
+        newMessages[newMessages.length - 1] = {
+          sender: 'bot',
+          text: `Erro ao processar imagem: ${error.message}`
+        };
         return newMessages;
       });
     } finally {
-      setMediaUrl('');
       setLoading(false);
-      setIsAIThinking(false); // Desativa a animação de pensamento
+      setIsAIThinking(false);
+      setMediaUrl('');
     }
   };
 
   // Function to remove JSON blocks from the AI response
   const removeJsonBlocks = (text) => {
-    if (!text) return text;
+    if (!text) return '';
 
-    // First try to handle the specific format from the example
-    // This matches the exact pattern we've seen in the example
-    const specificJsonPattern = /```json\s*\{[\s\S]*?\}\s*```|\{\s*"invalid_fields"[\s\S]*?"status":\s*"[^"]*"\s*\}/g;
-
-    // Apply the specific pattern first
-    let cleanedText = text.replace(specificJsonPattern, '');
-
-    // If that didn't change anything, try more general approaches
-    if (cleanedText === text) {
-      // Regular expression to match JSON blocks in code fences
-      const jsonCodeBlockRegex = /```json\s*([\s\S]*?)\s*```/g;
-
-      // Regular expression to match standalone JSON objects
-      // This is a more general pattern that looks for balanced braces
-      const standaloneJsonRegex = /\{(?:[^{}]|\{[^{}]*\})*\}/g;
-
-      // First remove JSON blocks in code fences
-      cleanedText = text.replace(jsonCodeBlockRegex, '');
-
-      // Then try to identify and remove standalone JSON objects
-      // But only if they look like our metadata format
-      cleanedText = cleanedText.replace(standaloneJsonRegex, (match) => {
-        // Only remove if it looks like our metadata
-        if (match.includes('"invalid_fields"') ||
-          match.includes('"fieldstoupdate"') ||
-          match.includes('"registrationstage"') ||
-          match.includes('"status"')) {
-          return '';
-        }
-        return match; // Keep other JSON-like structures
-      });
-    }
-
-    // Clean up any extra whitespace and return
-    return cleanedText.trim();
+    // Detect and remove JSON blocks in various formats
+    // Format 1: ```json ... ```
+    let processedText = text.replace(/```json([\s\S]*?)```/g, '');
+    
+    // Format 2: ```javascript ... ```
+    processedText = processedText.replace(/```javascript([\s\S]*?)```/g, '');
+    
+    // Format 3: ```js ... ```
+    processedText = processedText.replace(/```js([\s\S]*?)```/g, '');
+    
+    // Format 4: ``` ... ``` (any code block)
+    processedText = processedText.replace(/```([\s\S]*?)```/g, '');
+    
+    // Format 5: {{{ ... }}} (custom format sometimes used)
+    processedText = processedText.replace(/{{{([\s\S]*?)}}}/g, '');
+    
+    // Format 6: { ... } (only if it looks like a complete JSON object)
+    // This is more complex as we don't want to remove all curly braces
+    // We'll look for patterns that suggest a JSON object
+    processedText = processedText.replace(/\{[\s\n]*"[^"]+"\s*:[\s\S]*?\}/g, '');
+    
+    // Trim whitespace and remove any empty lines that might have been left
+    processedText = processedText.split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 0)
+      .join('\n');
+    
+    return processedText;
   };
 
   const sendMessage = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() && !mediaUrl) return;
 
+    // Adicionar a mensagem do usuário à conversa
     const userMessage = {
       sender: 'user',
-      text: input,
+      text: input
     };
+
     setMessages((prev) => [...prev, userMessage]);
     setInput('');
     setLoading(true);
     setIsAIThinking(true); // Ativa a animação de pensamento
 
     try {
+      // Enviar a mensagem para a API
       const response = await fetch(`${apiUrl}/whatsapp/message`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
-          phoneNumber,
           message: input,
-          sessionId: sessionId || undefined,
+          sessionId: sessionId || null,
+          phoneNumber
         }),
       });
 
+      if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status}`);
+      }
+
       const data = await response.json();
-      if (data.sessionId && !sessionId) setSessionId(data.sessionId);
 
-      // Clean the message by removing any JSON blocks
-      const cleanedMessage = removeJsonBlocks(data.message || '[Sem resposta da IA]');
+      // Atualizar o sessionId se for a primeira mensagem
+      if (!sessionId && data.sessionId) {
+        setSessionId(data.sessionId);
+      }
 
-      const botMessage = {
+      // Processar a resposta para remover blocos JSON
+      const cleanResponse = removeJsonBlocks(data.message);
+
+      // Adicionar a resposta da API à conversa
+      setMessages((prev) => [...prev, {
         sender: 'bot',
-        text: cleanedMessage,
-      };
-      setMessages((prev) => [...prev, botMessage]);
+        text: cleanResponse || 'Desculpe, não entendi sua mensagem.'
+      }]);
     } catch (error) {
-      setMessages((prev) => [...prev, { sender: 'bot', text: 'Erro ao conectar com a API.' }]);
+      console.error('Erro ao enviar mensagem:', error);
+      setMessages((prev) => [...prev, {
+        sender: 'bot',
+        text: `Erro: ${error.message}`
+      }]);
     } finally {
       setLoading(false);
-      setIsAIThinking(false); // Desativa a animação de pensamento
+      setIsAIThinking(false);
     }
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      if (e.shiftKey) {
-        // Com Shift+Enter, permite a quebra de linha (não faz nada)
-        return;
-      }
-      // Com Enter sozinho, envia a mensagem
-      e.preventDefault(); // Impede quebra de linha
+    // Enviar mensagem ao pressionar Enter (sem Shift)
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
       sendMessage();
     }
   };
 
   // Função para processar imagens arrastadas e soltas
   const handleImageDrop = (e) => {
-    e.preventDefault();
-    setIsDragging(false);
-    
-    const files = e.dataTransfer.files;
-    if (files && files.length > 0) {
-      const file = files[0];
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0];
       
       // Verificar se o arquivo é uma imagem
-      if (!file.type.startsWith('image/')) {
-        alert('Por favor, arraste apenas arquivos de imagem.');
+      if (!file.type.match('image.*')) {
+        alert('Por favor, envie apenas arquivos de imagem.');
         return;
       }
       
-      // Limite de tamanho (5MB)
+      // Verificar o tamanho do arquivo (limite de 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        alert('A imagem é muito grande. O tamanho máximo é 5MB.');
+        alert('O arquivo é muito grande. Por favor, envie imagens de até 5MB.');
         return;
       }
       
       const reader = new FileReader();
       reader.onload = (event) => {
-        if (event.target?.result) {
-          setMediaUrl(event.target.result.toString());
+        // Comprimir a imagem antes de enviar
+        const img = new Image();
+        img.src = event.target.result as string;
+        
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          // Redimensionar se necessário (máximo 1200px de largura/altura)
+          let width = img.width;
+          let height = img.height;
+          
+          if (width > 1200 || height > 1200) {
+            if (width > height) {
+              height = Math.round((height * 1200) / width);
+              width = 1200;
+            } else {
+              width = Math.round((width * 1200) / height);
+              height = 1200;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // Converter para JPEG com qualidade 0.7
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+          setMediaUrl(dataUrl);
           setShowImagePreview(true);
-        }
+        };
       };
+      
       reader.readAsDataURL(file);
     }
   };
-
-  // Phone number input screen
-  if (!isChatReady) {
-    return (
-      <div className="min-h-screen bg-background bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-background to-background flex flex-col items-center justify-center p-4 md:p-6 relative overflow-hidden">
-        {/* Botão de tema no canto superior direito */}
-        <div className="absolute top-4 right-4">
-          <ThemeToggle />
-        </div>
-        <div className="mb-6 md:mb-10 flex flex-col items-center justify-center">
-          <div className="flex items-center justify-center mb-1" style={{ transform: 'scale(1.2)', margin: '0 auto' }}>
-            <OrbitalLoader isThinking={false} />
-          </div>
-        </div>
-        <Card style={{ display: 'flex', justifyContent: 'center' }} className="w-full max-w-md md:max-w-xl lg:max-w-2xl mx-auto backdrop-blur-sm bg-card border border-primary/20 shadow-lg shadow-primary/10 max-h-[90vh] min-h-[500px] flex flex-col">
-          <CardContent className="flex flex-col items-center justify-center h-full gap-8 py-12">
-            <div className="space-y-2 text-center">
-              <h2 className="text-2xl font-bold text-foreground">Simulador de Chat</h2>
-              <p className="text-sm text-muted-foreground text-center">
-                Digite o número de telefone para iniciar a conversa
-              </p>
-            </div>
-            <div className="relative w-full max-w-[80%] md:max-w-[60%]">
-              <Input
-                placeholder="Digite o número (apenas dígitos)"
-                value={phoneNumber}
-                onChange={handlePhoneNumberChange}
-                className="bg-background/50 backdrop-blur-sm border-primary/30 focus:border-primary/70 md:py-6 md:text-lg"
-                onKeyPress={(e) => e.key === 'Enter' && startChat()}
-              />
-            </div>
-            <Button
-              onClick={startChat}
-              className="bg-primary hover:bg-primary/80 text-white font-medium px-6 py-2 md:py-3 md:text-lg">
-              Iniciar Chat
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   // Loading animation component
   const LoadingAnimation = () => (
@@ -351,145 +385,217 @@ export default function ChatSimulador() {
     </div>
   );
 
+  // Tela de entrada do número de telefone
+  if (!isChatReady) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 md:p-6 relative">
+        {/* Gradiente de fundo sutil */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-secondary/5 z-0"></div>
+        
+        {/* Botão de tema no canto superior direito */}
+        <div className="absolute top-4 right-4 z-10">
+          <ThemeToggle />
+        </div>
+        
+        <Card className="w-full max-w-md p-6 shadow-lg border border-border/30 backdrop-blur-sm bg-card/90 glass card-depth z-10">
+          <CardContent className="flex flex-col gap-6 pt-6">
+            <div className="text-center space-y-2">
+              <h2 className={`text-2xl font-bold text-gradient gradient-primary ${orbitron.className}`}>
+                Chat Simulador
+              </h2>
+              <p className="text-muted-foreground text-sm">
+                Uma experiência de conversa interativa
+              </p>
+            </div>
+            
+            {/* Animação orbital centralizada */}
+            <div className="flex justify-center py-4">
+              <div style={{ transform: 'scale(0.8)' }}>
+                <OrbitalLoader isThinking={false} />
+              </div>
+            </div>
+            
+            <div className="flex flex-col gap-3">
+              <label htmlFor="phone" className="text-sm font-medium flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                </svg>
+                Digite seu número de telefone:
+              </label>
+              <Input
+                id="phone"
+                type="tel"
+                placeholder="(11) 99999-9999"
+                value={phoneNumber}
+                onChange={handlePhoneNumberChange}
+                className="border-primary/30 focus:border-primary/70 bg-background/50 backdrop-blur-sm shadow-sm"
+                onKeyDown={(e) => e.key === 'Enter' && startChat()}
+              />
+            </div>
+            
+            <Button 
+              onClick={startChat} 
+              className="w-full bg-primary hover:bg-primary/90 transition-all duration-300 shadow-md hover:shadow-lg py-6 text-base font-medium btn-enhanced">
+              Iniciar Chat
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Interface principal do chat
   return (
-    <div className="min-h-screen bg-background bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-background to-background flex flex-col items-center justify-center p-4 md:p-6 relative overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 md:p-6 relative" ref={dropZoneRef}>
+      {/* Gradiente de fundo sutil */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-secondary/5 z-0"></div>
+      
+      {/* Indicador de drag and drop */}
+      {isDragging && (
+        <div className="absolute inset-0 bg-primary/10 backdrop-blur-sm flex items-center justify-center z-50 border-2 border-dashed border-primary/50 rounded-lg">
+          <div className="text-center p-4 bg-card/80 rounded-lg shadow-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-primary mb-2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            <p className="text-foreground font-medium">Solte a imagem para enviá-la</p>
+          </div>
+        </div>
+      )}
+      
       {/* Botão de tema no canto superior direito */}
-      <div className="absolute top-4 right-4">
+      <div className="absolute top-4 right-4 z-10">
         <ThemeToggle />
       </div>
-      <div className="mb-6 md:mb-10 flex flex-col items-center justify-center">
-        <div className="flex items-center justify-center mb-1" style={{ transform: 'scale(1.2)', margin: '0 auto' }}>
+      
+      {/* Animação orbital no topo */}
+      <div className="mb-4 flex items-center justify-center">
+        <div style={{ transform: 'scale(0.8)' }}>
           <OrbitalLoader isThinking={isAIThinking} />
         </div>
       </div>
-      <Card className="w-full max-w-md md:max-w-xl lg:max-w-3xl xl:max-w-4xl mx-auto border border-primary/30 shadow-lg shadow-primary/10 overflow-hidden bg-card h-[600px] md:h-[700px] lg:h-[750px] flex flex-col">
+      
+      <Card className="w-full max-w-2xl shadow-lg relative overflow-hidden border border-border/40 backdrop-blur-sm bg-card/95 glass z-10">
         <div className="p-3 md:p-4 border-b border-border/50 bg-muted/20 backdrop-blur-sm rounded-t-md flex items-center justify-between">
           <div className="w-8"></div> {/* Espaço vazio para equilibrar o layout */}
-          <h3 className={`${orbitron.className} text-sm md:text-base font-medium text-primary tracking-wider`}>ASSISTENTE IA</h3>
-          <ThemeToggle />
+          <h3 className={`${orbitron.className} text-sm md:text-base font-medium text-gradient gradient-primary tracking-wider`}>ASSISTENTE IA</h3>
+          <div className="w-8 h-8 flex items-center justify-center">
+            <div className={`w-2 h-2 rounded-full ${isAIThinking ? 'bg-primary animate-pulse-subtle' : 'bg-green-500'}`}></div>
+          </div>
         </div>
-        <CardContent 
-          ref={dropZoneRef}
-          className={`flex flex-col gap-2 p-3 md:p-5 flex-grow overflow-y-auto ${isDragging ? 'bg-primary/10 border-2 border-dashed border-primary/50' : ''}`}
-          style={{
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none',
-            flex: '1 1 auto',
-            height: '0px', // Isso força o container a não crescer além do flex
-            transition: 'background-color 0.2s, border 0.2s'
-          }}
-          onDragOver={(e) => {
-            e.preventDefault();
-            setIsDragging(true);
-          }}
-          onDragEnter={(e) => {
-            e.preventDefault();
-            setIsDragging(true);
-          }}
-          onDragLeave={(e) => {
-            e.preventDefault();
-            setIsDragging(false);
-          }}
-          onDrop={handleImageDrop}
-        >
-          <style jsx global>{`
-            .hide-scrollbar::-webkit-scrollbar {
-              display: none;
-              width: 0;
-              background: transparent;
-            }
-          `}</style>
-          {messages.map((msg, i) => (
-            <div
-              key={i}
-              className={`relative text-sm md:text-base p-3 md:p-4 rounded-lg max-w-[80%] md:max-w-[75%] whitespace-pre-wrap break-words ${msg.sender === 'user'
-                ? 'bg-primary/20 border border-primary/30 text-foreground self-end ml-auto rounded-br-none'
-                : 'bg-muted border border-secondary/50 text-foreground self-start mr-auto rounded-bl-none dark:bg-secondary/20'
-                }`}
-            >
-              {msg.image ? (
-                <div className="space-y-2">
-                  <img src={msg.image} alt="Imagem enviada" className="max-w-full h-auto rounded" style={{ maxHeight: '200px', maxWidth: '100%' }} />
-                  <div className="text-xs text-muted-foreground">{msg.text}</div>
-                </div>
-              ) : (
-                <LinkifyText text={msg.text} />
-              )}
-            </div>
-          ))}
-          {loading && (
-            <div className="bg-secondary/20 border border-secondary/30 text-foreground self-start mr-auto rounded-lg rounded-bl-none p-3 md:p-4 max-w-[80%] md:max-w-[75%]">
-              <LoadingAnimation />
+        
+        <CardContent className="p-0 flex flex-col gap-0 overflow-hidden" style={{ height: '600px' }}>
+          <div
+            className="flex-1 overflow-y-auto p-4 md:p-6 flex flex-col gap-4 md:gap-5 hide-scrollbar"
+            ref={messagesEndRef}
+          >
+            {messages.map((msg, index) => (
+              <div
+                key={index}
+                className={`${msg.sender === 'user' ? 'self-end ml-auto' : 'self-start mr-auto'} 
+                           ${msg.sender === 'user' ? 'bg-primary text-primary-foreground shadow-md' : 'bg-secondary/10 border border-secondary/20 text-foreground shadow-sm'} 
+                           rounded-lg ${msg.sender === 'user' ? 'rounded-br-none' : 'rounded-bl-none'} 
+                           p-3 md:p-4 max-w-[80%] md:max-w-[75%] transition-all`}
+              >
+                {msg.image ? (
+                  <div className="flex flex-col gap-2">
+                    <img src={msg.image} alt="Imagem enviada" className="max-w-full h-auto rounded-md shadow-sm" style={{ maxHeight: '200px', maxWidth: '100%' }} />
+                    <div className="text-xs text-muted-foreground">{msg.text}</div>
+                  </div>
+                ) : (
+                  <LinkifyText text={msg.text} />
+                )}
+              </div>
+            ))}
+            
+            {loading && (
+              <div className="bg-secondary/10 border border-secondary/20 text-foreground self-start mr-auto rounded-lg rounded-bl-none p-3 md:p-4 max-w-[80%] md:max-w-[75%] shadow-sm">
+                <LoadingAnimation />
+              </div>
+            )}
+          </div>
+
+          {showCamera && (
+            <div className="flex flex-col items-center gap-3 p-4 border-t border-border/50 bg-muted/10 backdrop-blur-sm max-h-[40vh]">
+              <div className="w-full h-full overflow-hidden flex items-center justify-center rounded-lg shadow-md">
+                <video ref={videoRef} autoPlay className="w-full max-h-[30vh] object-contain rounded-lg" />
+              </div>
+              <canvas ref={canvasRef} className="hidden" />
+              <div className="flex gap-3 w-full justify-center">
+                <Button
+                  onClick={() => setShowCamera(false)}
+                  variant="outline"
+                  className="border-destructive/50 hover:bg-destructive/20 text-destructive dark:text-destructive-foreground shadow-sm transition-all">
+                  Cancelar
+                </Button>
+                <Button 
+                  onClick={captureImage} 
+                  className="bg-primary hover:bg-primary/90 shadow-md hover:shadow-lg transition-all">
+                  Capturar
+                </Button>
+              </div>
             </div>
           )}
+
+          {showImagePreview && mediaUrl && (
+            <div className="flex flex-col items-center gap-3 p-4 border-t border-border/50 bg-muted/10 backdrop-blur-sm max-h-[40vh]">
+              <div className="w-full h-full overflow-hidden flex items-center justify-center rounded-lg shadow-md">
+                <img src={mediaUrl} alt="Preview" className="rounded-lg max-h-[30vh]" style={{ maxWidth: '100%', objectFit: 'contain' }} />
+              </div>
+              <div className="flex gap-3 w-full justify-center">
+                <Button
+                  onClick={cancelImagePreview}
+                  variant="outline"
+                  className="border-destructive/50 hover:bg-destructive/20 text-destructive dark:text-destructive-foreground shadow-sm transition-all">
+                  Cancelar
+                </Button>
+                <Button 
+                  onClick={sendImageMessage} 
+                  className="bg-primary hover:bg-primary/90 shadow-md hover:shadow-lg transition-all">
+                  Enviar
+                </Button>
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center p-4 md:p-6 border-t border-border/50 bg-muted/10 backdrop-blur-sm gap-3 md:gap-4 rounded-b-md">
+            <textarea
+              placeholder="Digite sua mensagem..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyPress}
+              disabled={loading}
+              rows={1}
+              style={{
+                resize: 'none',
+                minHeight: '45px',
+                maxHeight: '80px',
+                overflow: 'auto'
+              }}
+              className="flex w-full rounded-lg border border-input bg-background/50 backdrop-blur-sm border-primary/30 focus:border-primary/70 px-4 py-3 text-sm md:text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 hide-scrollbar shadow-sm"
+            />
+            <Button
+              onClick={sendMessage}
+              disabled={loading}
+              className="bg-primary hover:bg-primary/90 text-white whitespace-nowrap md:px-6 md:py-5 md:text-base shadow-md hover:shadow-lg transition-all btn-enhanced">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                <path d="m22 2-7 20-4-9-9-4Z"/>
+                <path d="M22 2 11 13"/>
+              </svg>
+              Enviar
+            </Button>
+            <Button
+              onClick={startCamera}
+              variant="outline"
+              className="border-primary/30 hover:bg-primary/20 md:px-4 md:py-5 md:text-base shadow-sm hover:shadow-md transition-all">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                <circle cx="12" cy="13" r="3"/>
+              </svg>
+            </Button>
+          </div>
         </CardContent>
-
-        {showCamera && (
-          <div className="flex flex-col items-center gap-2 p-2 border-t border-border/50 bg-muted/20 max-h-[40vh]">
-            <div className="w-full h-full overflow-hidden flex items-center justify-center">
-              <video ref={videoRef} autoPlay className="w-full max-h-[30vh] object-contain rounded-md" />
-            </div>
-            <canvas ref={canvasRef} className="hidden" />
-            <div className="flex gap-2 w-full justify-center">
-              <Button
-                onClick={() => setShowCamera(false)}
-                variant="outline"
-                className="border-destructive/50 hover:bg-destructive/20 text-destructive dark:text-destructive-foreground">
-                Cancelar
-              </Button>
-              <Button onClick={captureImage} className="bg-primary hover:bg-primary/80">Capturar</Button>
-            </div>
-          </div>
-        )}
-
-        {showImagePreview && mediaUrl && (
-          <div className="flex flex-col items-center gap-2 p-2 border-t border-border/50 bg-muted/20 max-h-[40vh]">
-            <div className="w-full h-full overflow-hidden flex items-center justify-center">
-              <img src={mediaUrl} alt="Preview" className="rounded-md max-h-[30vh]" style={{ maxWidth: '100%', objectFit: 'contain' }} />
-            </div>
-            <div className="flex gap-2 w-full justify-center">
-              <Button
-                onClick={cancelImagePreview}
-                variant="outline"
-                className="border-destructive/50 hover:bg-destructive/20 text-destructive dark:text-destructive-foreground">
-                Cancelar
-              </Button>
-              <Button onClick={sendImageMessage} className="bg-primary hover:bg-primary/80">Enviar</Button>
-            </div>
-          </div>
-        )}
-
-        <div className="flex items-center p-3 md:p-5 border-t border-border/50 bg-muted/20 backdrop-blur-sm gap-2 md:gap-3 rounded-b-md">
-          <textarea
-            placeholder="Digite sua mensagem..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyPress}
-            disabled={loading}
-            rows={1}
-            style={{
-              resize: 'none',
-              minHeight: '45px',
-              maxHeight: '80px',
-              overflow: 'auto',
-              scrollbarWidth: 'none', // Firefox
-              msOverflowStyle: 'none', // IE/Edge
-            }}
-            className="flex w-full rounded-md border border-input bg-background/50 backdrop-blur-sm border-primary/30 focus:border-primary/70 px-3 py-2 text-sm md:text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 hide-scrollbar"
-          />
-          <Button
-            onClick={sendMessage}
-            disabled={loading}
-            className="bg-primary hover:bg-primary/80 text-white whitespace-nowrap md:px-6 md:py-5 md:text-base">
-            Enviar
-          </Button>
-          <Button
-            onClick={startCamera}
-            variant="outline"
-            className="border-primary/30 hover:bg-primary/20 md:px-4 md:py-5 md:text-base">
-            📷
-          </Button>
-        </div>
       </Card>
     </div>
   );
