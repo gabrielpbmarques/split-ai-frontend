@@ -4,33 +4,33 @@
 
 @layer base {
   :root {
-    /* Paleta principal enriquecida */
-    --background: 210 20% 98%;
-    --foreground: 224 71% 4%;
+    /* Paleta principal enriquecida - baseada em RGB(164, 210, 71) */
+    --background: 84 30% 98%;
+    --foreground: 84 80% 10%;
     --card: 0 0% 100%;
-    --card-foreground: 224 71% 4%;
+    --card-foreground: 84 80% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 224 71% 4%;
-    --primary: 221 83% 53%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 250 95% 76%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 262 83% 58%;
-    --accent-foreground: 210 40% 98%;
+    --popover-foreground: 84 80% 10%;
+    --primary: 84 58% 55%;
+    --primary-foreground: 84 10% 98%;
+    --secondary: 65 70% 60%;
+    --secondary-foreground: 84 80% 10%;
+    --muted: 84 20% 96.1%;
+    --muted-foreground: 84 16% 47%;
+    --accent: 120 50% 50%;
+    --accent-foreground: 84 10% 98%;
     --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 221 83% 53%;
+    --destructive-foreground: 84 10% 98%;
+    --border: 84 32% 91%;
+    --input: 84 32% 91%;
+    --ring: 84 58% 55%;
     
     /* Cores para gráficos e visualizações */
-    --chart-1: 221 83% 53%;
-    --chart-2: 262 83% 58%;
-    --chart-3: 191 97% 77%;
-    --chart-4: 43 96% 56%;
-    --chart-5: 0 84% 60%;
+    --chart-1: 84 58% 55%;
+    --chart-2: 65 70% 60%;
+    --chart-3: 120 50% 50%;
+    --chart-4: 100 60% 45%;
+    --chart-5: 40 90% 50%;
     
     /* Sombras refinadas */
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 1px rgba(0, 0, 0, 0.03);
@@ -46,33 +46,33 @@
     --radius: 0.5rem
   }
   .dark {
-    /* Paleta escura enriquecida */
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
-    --card: 222 47% 8%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222 47% 8%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217 91% 60%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 250 95% 76%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 262 83% 58%;
-    --accent-foreground: 210 40% 98%;
+    /* Paleta escura enriquecida - baseada em RGB(164, 210, 71) */
+    --background: 84 47% 11%;
+    --foreground: 84 40% 98%;
+    --card: 84 47% 8%;
+    --card-foreground: 84 40% 98%;
+    --popover: 84 47% 8%;
+    --popover-foreground: 84 40% 98%;
+    --primary: 84 70% 50%;
+    --primary-foreground: 84 40% 98%;
+    --secondary: 65 80% 60%;
+    --secondary-foreground: 84 40% 98%;
+    --muted: 84 33% 17%;
+    --muted-foreground: 84 20% 65%;
+    --accent: 120 60% 45%;
+    --accent-foreground: 84 40% 98%;
     --destructive: 0 62% 30%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217 33% 20%;
-    --input: 217 33% 17%;
-    --ring: 224 76% 48%;
+    --destructive-foreground: 84 40% 98%;
+    --border: 84 33% 20%;
+    --input: 84 33% 17%;
+    --ring: 84 76% 48%;
     
     /* Cores para gráficos e visualizações */
-    --chart-1: 217 91% 60%;
-    --chart-2: 262 83% 58%;
-    --chart-3: 191 97% 77%;
-    --chart-4: 43 96% 56%;
-    --chart-5: 0 84% 60%;
+    --chart-1: 84 70% 50%;
+    --chart-2: 65 80% 60%;
+    --chart-3: 120 60% 45%;
+    --chart-4: 100 70% 40%;
+    --chart-5: 40 90% 50%;
     
     /* Sombras refinadas para tema escuro */
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 1px rgba(0, 0, 0, 0.3);
@@ -94,8 +94,8 @@
   body {
     @apply bg-background text-foreground;
     background-image: 
-      radial-gradient(circle at 100% 0%, hsla(var(--primary) / 0.05) 0%, transparent 60%),
-      radial-gradient(circle at 0% 100%, hsla(var(--secondary) / 0.05) 0%, transparent 60%);
+      radial-gradient(circle at 100% 0%, hsla(var(--primary) / 0.08) 0%, transparent 60%),
+      radial-gradient(circle at 0% 100%, hsla(var(--secondary) / 0.08) 0%, transparent 60%);
     background-attachment: fixed;
   }
   

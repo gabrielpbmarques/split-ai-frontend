@@ -25,6 +25,7 @@ export default function ChatSimulador() {
   const [isChatReady, setIsChatReady] = useState(false);
   const [isAIThinking, setIsAIThinking] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const dropZoneRef = useRef(null);
@@ -376,12 +377,15 @@ export default function ChatSimulador() {
     }
   };
 
-  // Loading animation component
+  // Loading animation component - indicador de digitação melhorado
   const LoadingAnimation = () => (
-    <div className="flex items-center justify-center space-x-1">
-      <div className="h-2 w-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '0ms' }}></div>
-      <div className="h-2 w-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '300ms' }}></div>
-      <div className="h-2 w-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '600ms' }}></div>
+    <div className="flex items-center gap-1 px-1">
+      <div className="flex items-end">
+        <div className="h-2 w-2 bg-primary rounded-full animate-typing-indicator" style={{ animationDelay: '0ms' }}></div>
+        <div className="h-3 w-3 bg-primary rounded-full animate-typing-indicator" style={{ animationDelay: '150ms' }}></div>
+        <div className="h-2 w-2 bg-primary rounded-full animate-typing-indicator" style={{ animationDelay: '300ms' }}></div>
+      </div>
+      <div className="text-xs text-muted-foreground italic">digitando...</div>
     </div>
   );
 
@@ -390,14 +394,14 @@ export default function ChatSimulador() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4 md:p-6 relative">
         {/* Gradiente de fundo sutil */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-secondary/5 z-0"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-secondary/10 z-0"></div>
         
         {/* Botão de tema no canto superior direito */}
         <div className="absolute top-4 right-4 z-10">
           <ThemeToggle />
         </div>
         
-        <Card className="w-full max-w-md p-6 shadow-lg border border-border/30 backdrop-blur-sm bg-card/90 glass card-depth z-10">
+        <Card className="w-full max-w-md p-6 shadow-lg border border-border/30 backdrop-blur-sm bg-card/90 glass card-depth elevate z-10">
           <CardContent className="flex flex-col gap-6 pt-6">
             <div className="text-center space-y-2">
               <h2 className={`text-2xl font-bold text-gradient gradient-primary ${orbitron.className}`}>
@@ -435,7 +439,7 @@ export default function ChatSimulador() {
             
             <Button 
               onClick={startChat} 
-              className="w-full bg-primary hover:bg-primary/90 transition-all duration-300 shadow-md hover:shadow-lg py-6 text-base font-medium btn-enhanced">
+              className="w-full bg-primary hover:bg-primary/90 transition-all duration-300 shadow-md hover:shadow-lg py-6 text-base font-medium btn-enhanced interactive focus-highlight">
               Iniciar Chat
             </Button>
           </CardContent>
@@ -448,7 +452,7 @@ export default function ChatSimulador() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 md:p-6 relative" ref={dropZoneRef}>
       {/* Gradiente de fundo sutil */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-secondary/5 z-0"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-[#A4D247]/5 via-background to-secondary/5 z-0"></div>
       
       {/* Indicador de drag and drop */}
       {isDragging && (
@@ -476,7 +480,9 @@ export default function ChatSimulador() {
         </div>
       </div>
       
-      <Card className="w-full max-w-2xl shadow-lg relative overflow-hidden border border-border/40 backdrop-blur-sm bg-card/95 glass z-10">
+      <Card 
+        className={`w-full max-w-2xl shadow-lg relative overflow-hidden border backdrop-blur-sm bg-card/95 glass elevate z-10 transition-all duration-300 ${isFocused ? 'border-primary/60 shadow-xl' : 'border-border/40 shadow-lg'}`}
+      >
         <div className="p-3 md:p-4 border-b border-border/50 bg-muted/20 backdrop-blur-sm rounded-t-md flex items-center justify-between">
           <div className="w-8"></div> {/* Espaço vazio para equilibrar o layout */}
           <h3 className={`${orbitron.className} text-sm md:text-base font-medium text-gradient gradient-primary tracking-wider`}>ASSISTENTE IA</h3>
@@ -494,13 +500,26 @@ export default function ChatSimulador() {
               <div
                 key={index}
                 className={`${msg.sender === 'user' ? 'self-end ml-auto' : 'self-start mr-auto'} 
-                           ${msg.sender === 'user' ? 'bg-primary text-primary-foreground shadow-md' : 'bg-secondary/10 border border-secondary/20 text-foreground shadow-sm'} 
+                           ${msg.sender === 'user' ? 'bg-primary text-primary-foreground shadow-md' : 'bg-accent/10 border border-accent/20 text-foreground shadow-sm'} 
                            rounded-lg ${msg.sender === 'user' ? 'rounded-br-none' : 'rounded-bl-none'} 
-                           p-3 md:p-4 max-w-[80%] md:max-w-[75%] transition-all`}
+                           p-3 md:p-4 max-w-[80%] md:max-w-[75%] transition-all
+                           ${msg.sender === 'user' ? 'animate-user-message-in' : 'animate-bot-message-in'}`}
               >
                 {msg.image ? (
                   <div className="flex flex-col gap-2">
-                    <img src={msg.image} alt="Imagem enviada" className="max-w-full h-auto rounded-md shadow-sm" style={{ maxHeight: '200px', maxWidth: '100%' }} />
+                    <div className="flex justify-center">
+                      <img 
+                        src={msg.image} 
+                        alt="Imagem enviada" 
+                        className="rounded-md shadow-sm" 
+                        style={{ 
+                          maxHeight: '200px', 
+                          maxWidth: '100%',
+                          objectFit: 'contain',
+                          display: 'block'
+                        }} 
+                      />
+                    </div>
                     <div className="text-xs text-muted-foreground">{msg.text}</div>
                   </div>
                 ) : (
@@ -510,7 +529,7 @@ export default function ChatSimulador() {
             ))}
             
             {loading && (
-              <div className="bg-secondary/10 border border-secondary/20 text-foreground self-start mr-auto rounded-lg rounded-bl-none p-3 md:p-4 max-w-[80%] md:max-w-[75%] shadow-sm">
+              <div className="bg-accent/10 border border-accent/20 text-foreground self-start mr-auto rounded-lg rounded-bl-none p-3 md:p-4 max-w-[80%] md:max-w-[75%] shadow-sm animate-bot-message-in">
                 <LoadingAnimation />
               </div>
             )}
@@ -518,8 +537,17 @@ export default function ChatSimulador() {
 
           {showCamera && (
             <div className="flex flex-col items-center gap-3 p-4 border-t border-border/50 bg-muted/10 backdrop-blur-sm max-h-[40vh]">
-              <div className="w-full h-full overflow-hidden flex items-center justify-center rounded-lg shadow-md">
-                <video ref={videoRef} autoPlay className="w-full max-h-[30vh] object-contain rounded-lg" />
+              <div className="flex items-center justify-center">
+                <video 
+                  ref={videoRef} 
+                  autoPlay 
+                  className="max-h-[30vh] rounded-lg shadow-md" 
+                  style={{ 
+                    maxWidth: '100%', 
+                    objectFit: 'contain',
+                    display: 'block'
+                  }} 
+                />
               </div>
               <canvas ref={canvasRef} className="hidden" />
               <div className="flex gap-3 w-full justify-center">
@@ -540,8 +568,17 @@ export default function ChatSimulador() {
 
           {showImagePreview && mediaUrl && (
             <div className="flex flex-col items-center gap-3 p-4 border-t border-border/50 bg-muted/10 backdrop-blur-sm max-h-[40vh]">
-              <div className="w-full h-full overflow-hidden flex items-center justify-center rounded-lg shadow-md">
-                <img src={mediaUrl} alt="Preview" className="rounded-lg max-h-[30vh]" style={{ maxWidth: '100%', objectFit: 'contain' }} />
+              <div className="flex items-center justify-center">
+                <img 
+                  src={mediaUrl} 
+                  alt="Preview" 
+                  className="rounded-lg max-h-[30vh] shadow-md" 
+                  style={{ 
+                    maxWidth: '100%', 
+                    objectFit: 'contain',
+                    display: 'block'
+                  }} 
+                />
               </div>
               <div className="flex gap-3 w-full justify-center">
                 <Button
@@ -563,33 +600,41 @@ export default function ChatSimulador() {
             <textarea
               placeholder="Digite sua mensagem..."
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => {
+                setInput(e.target.value);
+                // Auto-ajuste da altura do textarea
+                e.target.style.height = 'auto';
+                e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
+              }}
               onKeyDown={handleKeyPress}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
               disabled={loading}
               rows={1}
               style={{
                 resize: 'none',
                 minHeight: '45px',
-                maxHeight: '80px',
-                overflow: 'auto'
+                maxHeight: '120px',
+                overflow: 'auto',
+                transition: 'height 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease'
               }}
-              className="flex w-full rounded-lg border border-input bg-background/50 backdrop-blur-sm border-primary/30 focus:border-primary/70 px-4 py-3 text-sm md:text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 hide-scrollbar shadow-sm"
+              className="flex w-full rounded-lg border border-input bg-background/50 backdrop-blur-sm border-primary/40 focus:border-primary/80 px-4 py-3 text-sm md:text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 hide-scrollbar shadow-sm focus-highlight"
             />
             <Button
               onClick={sendMessage}
               disabled={loading}
-              className="bg-primary hover:bg-primary/90 text-white whitespace-nowrap md:px-6 md:py-5 md:text-base shadow-md hover:shadow-lg transition-all btn-enhanced">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+              className="bg-primary hover:bg-primary/90 text-white whitespace-nowrap md:px-6 md:py-5 md:text-base shadow-md hover:shadow-lg transition-all btn-enhanced interactive focus-highlight">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 transition-transform group-hover:translate-x-1">
                 <path d="m22 2-7 20-4-9-9-4Z"/>
                 <path d="M22 2 11 13"/>
               </svg>
-              Enviar
+              <span>Enviar</span>
             </Button>
             <Button
               onClick={startCamera}
               variant="outline"
-              className="border-primary/30 hover:bg-primary/20 md:px-4 md:py-5 md:text-base shadow-sm hover:shadow-md transition-all">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              className="border-primary/40 hover:bg-primary/20 md:px-4 md:py-5 md:text-base shadow-sm hover:shadow-md transition-all interactive focus-highlight group">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:scale-110">
                 <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
                 <circle cx="12" cy="13" r="3"/>
               </svg>

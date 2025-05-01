@@ -71,9 +71,9 @@ export default function OrbitalLoader({ isThinking }: OrbitalLoaderProps) {
     for (let i = 0; i < numPoints; i++) {
       const geometry = new THREE.SphereGeometry(0.35, 8, 8);
       const material = new THREE.MeshStandardMaterial({ 
-        color: 0xffffff, 
-        emissive: 0x0066ff, 
-        emissiveIntensity: 1.5 
+        color: 0xa4d247, 
+        emissive: 0xa4d247, 
+        emissiveIntensity: 2.5 
       });
       const point = new THREE.Mesh(geometry, material);
 
@@ -146,17 +146,24 @@ export default function OrbitalLoader({ isThinking }: OrbitalLoaderProps) {
       pointsGroup.rotation.y += 0.001;
       pointsGroup.rotation.x += 0.0005;
 
+      // Verificar o tema atual para ajustar as cores
+      const currentTheme = themeRef.current;
+      
       points.forEach(p => {
         const material = p.material as THREE.MeshStandardMaterial;
-
-        if (!p.userData.colorSet) {
-          // Usar as mesmas cores do tema light para ambos os temas
-          material.emissive.set(0x0044aa);
-          material.color.set(0x0033aa);
-          p.userData.colorSet = true;
+        
+        // Ajustar cores com base no tema
+        if (currentTheme === 'light') {
+          // Cores mais intensas e saturadas para o tema claro
+          material.emissive.set(0x7aaa20); // Verde mais escuro para maior contraste
+          material.color.set(0x5c8a00);    // Base ainda mais escura
+          material.emissiveIntensity = 8;   // Intensidade maior para destacar no fundo claro
+        } else {
+          // Cores para o tema escuro
+          material.emissive.set(0xa4d247); // Verde limão original
+          material.color.set(0x8cb82e);    // Base um pouco mais escura
+          material.emissiveIntensity = 5;   // Intensidade padrão
         }
-
-        material.emissiveIntensity = 5;
       });
 
       renderer.render(scene, camera);
@@ -186,6 +193,7 @@ export default function OrbitalLoader({ isThinking }: OrbitalLoaderProps) {
       // transitionValueRef will be gradually decreased in the animation loop
     }
     
+    // Atualizar o tema atual
     themeRef.current = detectTheme();
   }, [isThinking]);
 
@@ -194,11 +202,26 @@ export default function OrbitalLoader({ isThinking }: OrbitalLoaderProps) {
       themeRef.current = detectTheme();
     };
 
+    // Observar mudanças de tema
     window.addEventListener('storage', handleThemeChange);
+    
+    // Observar mudanças na classe do documento para detectar alterações de tema
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          themeRef.current = detectTheme();
+        }
+      });
+    });
+    
+    observer.observe(document.documentElement, { attributes: true });
+    
+    // Definir o tema inicial
     themeRef.current = detectTheme();
 
     return () => {
       window.removeEventListener('storage', handleThemeChange);
+      observer.disconnect();
     };
   }, []);
 
