@@ -4,33 +4,33 @@
 
 @layer base {
   :root {
-    /* Paleta principal enriquecida - baseada em RGB(164, 210, 71) */
-    --background: 84 30% 98%;
-    --foreground: 84 80% 10%;
+    /* Paleta principal - baseada em Blue Navy e Off-White */
+    --background: 0 0% 98%;
+    --foreground: 220 90% 15%;
     --card: 0 0% 100%;
-    --card-foreground: 84 80% 10%;
+    --card-foreground: 220 90% 15%;
     --popover: 0 0% 100%;
-    --popover-foreground: 84 80% 10%;
-    --primary: 84 58% 55%;
-    --primary-foreground: 84 10% 98%;
-    --secondary: 65 70% 60%;
-    --secondary-foreground: 84 80% 10%;
-    --muted: 84 20% 96.1%;
-    --muted-foreground: 84 16% 47%;
-    --accent: 120 50% 50%;
-    --accent-foreground: 84 10% 98%;
+    --popover-foreground: 220 90% 15%;
+    --primary: 220 90% 25%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 220 60% 35%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 220 15% 96%;
+    --muted-foreground: 220 25% 45%;
+    --accent: 220 80% 30%;
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 84% 60%;
-    --destructive-foreground: 84 10% 98%;
-    --border: 84 32% 91%;
-    --input: 84 32% 91%;
-    --ring: 84 58% 55%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 220 20% 90%;
+    --input: 220 20% 90%;
+    --ring: 220 90% 35%;
     
     /* Cores para gráficos e visualizações */
-    --chart-1: 84 58% 55%;
-    --chart-2: 65 70% 60%;
-    --chart-3: 120 50% 50%;
-    --chart-4: 100 60% 45%;
-    --chart-5: 40 90% 50%;
+    --chart-1: 220 90% 35%;
+    --chart-2: 220 70% 45%;
+    --chart-3: 220 50% 55%;
+    --chart-4: 220 30% 65%;
+    --chart-5: 220 80% 25%;
     
     /* Sombras refinadas */
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 1px rgba(0, 0, 0, 0.03);
@@ -46,33 +46,33 @@
     --radius: 0.5rem
   }
   .dark {
-    /* Paleta escura enriquecida - baseada em RGB(164, 210, 71) */
-    --background: 84 47% 11%;
-    --foreground: 84 40% 98%;
-    --card: 84 47% 8%;
-    --card-foreground: 84 40% 98%;
-    --popover: 84 47% 8%;
-    --popover-foreground: 84 40% 98%;
-    --primary: 84 70% 50%;
-    --primary-foreground: 84 40% 98%;
-    --secondary: 65 80% 60%;
-    --secondary-foreground: 84 40% 98%;
-    --muted: 84 33% 17%;
-    --muted-foreground: 84 20% 65%;
-    --accent: 120 60% 45%;
-    --accent-foreground: 84 40% 98%;
+    /* Paleta escura - baseada em Blue Navy e Off-White */
+    --background: 220 90% 8%;
+    --foreground: 0 0% 98%;
+    --card: 220 90% 6%;
+    --card-foreground: 0 0% 98%;
+    --popover: 220 90% 6%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 220 80% 45%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 220 60% 55%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 220 50% 15%;
+    --muted-foreground: 220 20% 70%;
+    --accent: 220 70% 50%;
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 62% 30%;
-    --destructive-foreground: 84 40% 98%;
-    --border: 84 33% 20%;
-    --input: 84 33% 17%;
-    --ring: 84 76% 48%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 220 50% 18%;
+    --input: 220 50% 15%;
+    --ring: 220 80% 55%;
     
     /* Cores para gráficos e visualizações */
-    --chart-1: 84 70% 50%;
-    --chart-2: 65 80% 60%;
-    --chart-3: 120 60% 45%;
-    --chart-4: 100 70% 40%;
-    --chart-5: 40 90% 50%;
+    --chart-1: 220 80% 55%;
+    --chart-2: 220 70% 65%;
+    --chart-3: 220 60% 75%;
+    --chart-4: 220 50% 85%;
+    --chart-5: 220 90% 45%;
     
     /* Sombras refinadas para tema escuro */
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 1px rgba(0, 0, 0, 0.3);
@@ -81,8 +81,8 @@
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
     
     /* Efeitos de vidro para tema escuro */
-    --glass-background: rgba(17, 24, 39, 0.7);
-    --glass-border: rgba(17, 24, 39, 0.5);
+    --glass-background: rgba(30, 58, 138, 0.7);
+    --glass-border: rgba(30, 58, 138, 0.5);
     --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
   }
 }

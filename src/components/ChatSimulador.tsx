@@ -487,7 +487,7 @@ export default function ChatSimulador() {
           <div className="w-8"></div> {/* Espaço vazio para equilibrar o layout */}
           <h3 className={`${orbitron.className} text-sm md:text-base font-medium text-gradient gradient-primary tracking-wider`}>ASSISTENTE IA</h3>
           <div className="w-8 h-8 flex items-center justify-center">
-            <div className={`w-2 h-2 rounded-full ${isAIThinking ? 'bg-primary animate-pulse-subtle' : 'bg-green-500'}`}></div>
+            <div className={`w-2 h-2 rounded-full ${isAIThinking ? 'bg-primary animate-pulse-subtle' : 'bg-primary'}`}></div>
           </div>
         </div>
         
