@@ -9,8 +9,8 @@ import { Navigation } from "@/components/layout/Navigation";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Anthor AGI Simulator",
-  description: "Simulador de IA para interação com agentes Anthor",
+  title: "Simulador de IA Suporte",
+  description: "Simulador de IA para interação com agentes LLM",
 };
 
 export default function RootLayout({

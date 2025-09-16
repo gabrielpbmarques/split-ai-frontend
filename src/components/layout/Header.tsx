@@ -16,7 +16,7 @@ export function Header() {
       <div className="container flex h-14 items-center justify-between px-4">
         <div className="flex items-center space-x-2">
           <h1 className="text-xl font-bold text-foreground">
-            Anthor AGI Simulator
+            Support AI Simulator
           </h1>
         </div>
 

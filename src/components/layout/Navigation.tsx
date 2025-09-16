@@ -26,9 +26,7 @@ export function Navigation() {
   const pathname = usePathname();
   const { isAuthenticated } = useAuth();
 
-  const filteredItems = navigationItems.filter(item => 
-    !item.requiresAuth || isAuthenticated
-  );
+  const filteredItems = navigationItems.filter(() => isAuthenticated);
 
   if (!isAuthenticated && pathname !== '/login') {
     return (
