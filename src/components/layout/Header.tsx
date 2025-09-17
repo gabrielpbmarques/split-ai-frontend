@@ -40,7 +40,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-white/5 backdrop-blur-2xl supports-[backdrop-filter]:bg-white/5 dark:border-white/20 dark:bg-white/10 transition-all duration-300">
-      <div className="container flex h-16 items-center justify-between px-6">
+      <div className="container max-w-full flex h-16 items-center justify-between px-6">
         <div className="flex items-center space-x-3">
           <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
             <span className="text-white font-bold text-sm">AI</span>
