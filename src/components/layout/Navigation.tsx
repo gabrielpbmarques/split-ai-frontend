@@ -30,7 +30,7 @@ export function Navigation() {
 
   if (!isAuthenticated && pathname !== '/login') {
     return (
-      <nav className="border-b bg-background">
+      <nav className="sticky top-14 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-12 items-center px-4">
           <Link
             href="/login"
@@ -50,7 +50,7 @@ export function Navigation() {
   if (filteredItems.length === 0) return null;
 
   return (
-    <nav className="border-b bg-background">
+    <nav className="sticky top-14 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-12 items-center px-4">
         <div className="flex space-x-1">
           {filteredItems.map((item) => {
