@@ -63,17 +63,18 @@ export default function OrbitalLoader({ isThinking }: OrbitalLoaderProps) {
     const points: THREE.Mesh[] = [];
     // Reduzir o raio base para garantir que mesmo ao pulsar, a órbita não ultrapasse os limites
     const baseOrbitRadius = 27;
-    const numPoints = 480;
+    const numPoints = 240;
 
     const pointsGroup = new THREE.Group();
     scene.add(pointsGroup);
 
     for (let i = 0; i < numPoints; i++) {
-      const geometry = new THREE.SphereGeometry(0.35, 8, 8);
+      const geometry = new THREE.SphereGeometry(0.5, 8, 8);
       const material = new THREE.MeshStandardMaterial({ 
-        color: 0xa4d247, 
-        emissive: 0xa4d247, 
-        emissiveIntensity: 2.5 
+        // Cores iniciais serão sobrescritas no loop conforme o tema
+        color: 0x1e3a8a,           // blue-900
+        emissive: 0x3b82f6,        // blue-500
+        emissiveIntensity: 5 
       });
       const point = new THREE.Mesh(geometry, material);
 
@@ -146,23 +147,22 @@ export default function OrbitalLoader({ isThinking }: OrbitalLoaderProps) {
       pointsGroup.rotation.y += 0.001;
       pointsGroup.rotation.x += 0.0005;
 
-      // Verificar o tema atual para ajustar as cores
+      // Verificar o tema atual para ajustar as cores de acordo com a paleta (azul/roxo)
       const currentTheme = themeRef.current;
       
       points.forEach(p => {
         const material = p.material as THREE.MeshStandardMaterial;
         
-        // Ajustar cores com base no tema
+        // Ajustar cores com base no tema usando a paleta do app
         if (currentTheme === 'light') {
-          // Cores mais intensas e saturadas para o tema claro
-          material.emissive.set(0x7aaa20); // Verde mais escuro para maior contraste
-          material.color.set(0x5c8a00);    // Base ainda mais escura
-          material.emissiveIntensity = 8;   // Intensidade maior para destacar no fundo claro
+          material.color.set(0x0b1b3b);
+          material.emissive.set(0x1e3a8a);
+          material.emissiveIntensity = 5.5;
         } else {
-          // Cores para o tema escuro
-          material.emissive.set(0xa4d247); // Verde limão original
-          material.color.set(0x8cb82e);    // Base um pouco mais escura
-          material.emissiveIntensity = 5;   // Intensidade padrão
+          // Tema escuro: emissivo roxo/azul brilhante
+          material.color.set(0x3b82f6);        // blue-500
+          material.emissive.set(0x8b5cf6);     // purple-500
+          material.emissiveIntensity = 6.5;
         }
       });
 
