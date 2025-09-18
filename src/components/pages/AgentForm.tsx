@@ -1,13 +1,16 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loading } from "@/components/ui/Loading";
+import { AgentInfoSection } from "@/components/pages/agent-form/AgentInfoSection";
+import { InstructionsSection } from "@/components/pages/agent-form/InstructionsSection";
+import { DiretrizesSection } from "@/components/pages/agent-form/DiretrizesSection";
+import { ParserSection } from "@/components/pages/agent-form/ParserSection";
 
-import { AgentDetail, CreateAgentRequest, UpdateAgentRequest, AIInstructions, AIInstructionsDiretrizes } from "@/types";
+import { AgentDetail, CreateAgentRequest, UpdateAgentRequest, AIInstructions } from "@/types";
 
 type AgentFormValues = {
   name: string;
@@ -42,39 +45,46 @@ export function AgentForm({ initial, submitting, error, submitLabel = "Salvar", 
     parserSchema: initial?.parser?.schema ? JSON.stringify(initial?.parser?.schema, null, 2) : "",
   });
 
-  const normalizeDiretrizes = (diretrizes: any): AIInstructionsDiretrizes => {
-    if (!diretrizes || typeof diretrizes !== 'object') return {};
-    
-    const normalized: AIInstructionsDiretrizes = {};
-    Object.entries(diretrizes).forEach(([key, value]) => {
-      if (typeof value === 'object' && value !== null) {
-        // Se for um objeto, tenta extrair uma propriedade comum ou serializa
-        const obj = value as any;
-        if ('value' in obj) {
-          normalized[key] = String(obj.value || '');
-        } else if ('description' in obj) {
-          normalized[key] = String(obj.description || '');
-        } else if ('content' in obj) {
-          normalized[key] = String(obj.content || '');
-        } else {
-          // Se não encontrar propriedades conhecidas, serializa como JSON legível
-          try {
-            normalized[key] = JSON.stringify(value, null, 2);
-          } catch {
-            normalized[key] = String(value);
-          }
+  type DiretrizObj = { descricao: string; detalhes: string };
+  type DiretrizItem = { id: string; key: string; descricao: string; detalhes: string };
+
+  const normalizeDiretrizes = (raw: any): Record<string, DiretrizObj> => {
+    if (!raw || typeof raw !== "object") return {};
+    const normalized: Record<string, DiretrizObj> = {};
+    Object.entries(raw).forEach(([key, value]) => {
+      if (typeof value === "string") {
+        let parsed: any = null;
+        try {
+          parsed = JSON.parse(value);
+        } catch {
+          parsed = null;
         }
+        if (parsed && typeof parsed === "object") {
+          normalized[key] = {
+            descricao: String(parsed.descricao || parsed.description || ""),
+            detalhes: String(parsed.detalhes || parsed.details || ""),
+          };
+        } else {
+          normalized[key] = { descricao: "", detalhes: String(value || "") };
+        }
+      } else if (typeof value === "object" && value !== null) {
+        const obj = value as any;
+        normalized[key] = {
+          descricao: String(obj.descricao || obj.description || ""),
+          detalhes: String(obj.detalhes || obj.details || ""),
+        };
       } else {
-        normalized[key] = String(value || '');
+        normalized[key] = { descricao: "", detalhes: String(value || "") };
       }
     });
-    
     return normalized;
   };
 
-  const [diretrizes, setDiretrizes] = useState<AIInstructionsDiretrizes>(
-    normalizeDiretrizes(initial?.instructions?.diretrizes)
-  );
+  const [diretrizesList, setDiretrizesList] = useState<DiretrizItem[]>(() => {
+    const norm = normalizeDiretrizes(initial?.instructions?.diretrizes);
+    const entries = Object.entries(norm);
+    return entries.map(([k, v], idx) => ({ id: `${k || 'diretriz'}::${idx}`, key: k, descricao: v.descricao, detalhes: v.detalhes }));
+  });
 
   useEffect(() => {
     setValues({
@@ -88,7 +98,9 @@ export function AgentForm({ initial, submitting, error, submitLabel = "Salvar", 
       parserDescription: initial?.parser?.description || "",
       parserSchema: initial?.parser?.schema ? JSON.stringify(initial?.parser?.schema, null, 2) : "",
     });
-    setDiretrizes(normalizeDiretrizes(initial?.instructions?.diretrizes));
+  const norm = normalizeDiretrizes(initial?.instructions?.diretrizes);
+  const entries = Object.entries(norm);
+  setDiretrizesList(entries.map(([k, v], idx) => ({ id: `${k || 'diretriz'}::${idx}`, key: k, descricao: v.descricao, detalhes: v.detalhes })));
   }, [initial]);
 
   const parsedSchema = useMemo(() => {
@@ -107,10 +119,39 @@ export function AgentForm({ initial, submitting, error, submitLabel = "Salvar", 
     return true;
   }, [values.name, values.temperature, parsedSchema]);
 
+  const formErrors = useMemo(() => {
+    return {
+      name: !values.name.trim() ? "Nome é obrigatório" : undefined,
+      temperature:
+        values.temperature && isNaN(Number(values.temperature))
+          ? "Temperatura deve ser numérica"
+          : undefined,
+    } as { name?: string; temperature?: string };
+  }, [values.name, values.temperature]);
+
   const buildPayload = (): CreateAgentRequest | UpdateAgentRequest => {
-    const instructions = {
-      ...values.instructions,
-      diretrizes: Object.keys(diretrizes).length > 0 ? diretrizes : undefined,
+    const diretrizesPayload: Record<string, { descricao: string; detalhes: string }> = {};
+    // Ensure stable and unique keys when building the payload
+    const used: Record<string, number> = {};
+    diretrizesList.forEach((item) => {
+      let baseKey = (item.key || "diretriz").trim() || "diretriz";
+      // avoid temporary autogenerated keys leaking into payload
+      if (baseKey.startsWith("diretriz_") && (item.key || "").trim() === "") {
+        baseKey = "diretriz";
+      }
+      if (used[baseKey] === undefined && !(baseKey in diretrizesPayload)) {
+        used[baseKey] = 0;
+      } else {
+        used[baseKey] = (used[baseKey] || 0) + 1;
+      }
+      const finalKey = used[baseKey] ? `${baseKey}_${used[baseKey]}` : baseKey;
+      diretrizesPayload[finalKey] = { descricao: item.descricao || "", detalhes: item.detalhes || "" };
+    });
+
+    const instructions: AIInstructions = {
+      ...(values.instructions || {}),
+      context: values.instructions?.context || (values.instructions as any)?.contexto || "",
+  diretrizes: Object.keys(diretrizesPayload).length > 0 ? (diretrizesPayload as any) : undefined,
     };
 
     const base = {
@@ -149,243 +190,108 @@ export function AgentForm({ initial, submitting, error, submitLabel = "Salvar", 
   };
 
   const addDiretriz = () => {
-    const newKey = `diretriz_${Date.now()}`;
-    setDiretrizes((prev) => ({ ...prev, [newKey]: "" }));
+    const id = `tmp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    setDiretrizesList((prev) => [...prev, { id, key: "", descricao: "", detalhes: "" }]);
   };
 
-  const updateDiretriz = (oldKey: string, newKey: string, value: any) => {
-    setDiretrizes((prev) => {
-      const updated = { ...prev };
-      if (oldKey !== newKey && updated[oldKey] !== undefined) {
-        delete updated[oldKey];
-      }
-      // Força conversão para string, mesmo que seja um objeto
-      const stringValue = typeof value === 'string' ? value : 
-        typeof value === 'object' && value !== null ? 
-          JSON.stringify(value, null, 2) : 
-          String(value || '');
-      updated[newKey] = stringValue;
-      return updated;
-    });
+  const updateDiretrizKey = (id: string, newKey: string) => {
+    setDiretrizesList((prev) => prev.map((item) => (item.id === id ? { ...item, key: newKey } : item)));
   };
 
-  const removeDiretriz = (key: string) => {
-    setDiretrizes((prev) => {
-      const updated = { ...prev };
-      delete updated[key];
-      return updated;
-    });
+  const updateDiretrizField = (id: string, field: keyof DiretrizObj, value: string) => {
+    setDiretrizesList((prev) => prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)));
+  };
+
+  const removeDiretriz = (id: string) => {
+    setDiretrizesList((prev) => prev.filter((item) => item.id !== id));
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-8 max-w-3xl mx-auto">
       {(error || localError) && (
         <Alert variant="destructive">
           <AlertDescription>{error || localError}</AlertDescription>
         </Alert>
       )}
 
-      <Card variant="glass">
+      <Card variant="glass" className="shadow-xl">
         <CardHeader>
           <CardTitle>Informações do Agente</CardTitle>
+          <CardDescription>Defina os dados básicos e o comportamento do agente.</CardDescription>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2 md:col-span-2">
-            <label className="text-sm font-medium">Nome *</label>
-            <Input
-              value={values.name}
-              onChange={(e) => setValues((v) => ({ ...v, name: e.target.value }))}
-              placeholder="Ex: Suporte"
-              disabled={submitting}
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Identifier</label>
-            <Input
-              value={values.agentIdentifier}
-              onChange={(e) => setValues((v) => ({ ...v, agentIdentifier: e.target.value }))}
-              placeholder="ex: support"
-              disabled={submitting}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Modelo</label>
-            <Input
-              value={values.model}
-              onChange={(e) => setValues((v) => ({ ...v, model: e.target.value }))}
-              placeholder="ex: gpt-4o-mini"
-              disabled={submitting}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Temperatura</label>
-            <Input
-              value={values.temperature}
-              onChange={(e) => setValues((v) => ({ ...v, temperature: e.target.value }))}
-              placeholder="ex: 0.5"
-              disabled={submitting}
-              inputMode="decimal"
-            />
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <input
-              id="withHistory"
-              type="checkbox"
-              checked={values.withHistory}
-              onChange={(e) => setValues((v) => ({ ...v, withHistory: e.target.checked }))}
-              disabled={submitting}
-              className="h-4 w-4"
-            />
-            <label htmlFor="withHistory" className="text-sm font-medium">Manter histórico</label>
-          </div>
+        <CardContent>
+          <AgentInfoSection
+            values={{
+              name: values.name,
+              agentIdentifier: values.agentIdentifier,
+              model: values.model,
+              temperature: values.temperature,
+              withHistory: values.withHistory,
+            }}
+            onChange={(patch) => setValues((v) => ({ ...v, ...patch }))}
+            submitting={submitting}
+            errors={formErrors}
+          />
         </CardContent>
       </Card>
 
-      <Card variant="glass">
+      <Card variant="glass" className="shadow-xl">
         <CardHeader>
           <CardTitle>Instruções</CardTitle>
+          <CardDescription>Contextualize a missão do agente e detalhe diretrizes de atuação.</CardDescription>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2 md:col-span-2">
-            <label className="text-sm font-medium">Contexto</label>
-            <textarea
-              value={values.instructions?.contexto || values.instructions?.context || ""}
-              onChange={(e) => setInstructionField("contexto", e.target.value)}
-              className="w-full min-h-[90px] rounded-md border border-white/20 bg-transparent p-2"
-              disabled={submitting}
-            />
-          </div>
-          <div className="space-y-2 md:col-span-2">
-            <label className="text-sm font-medium">Objetivo</label>
-            <textarea
-              value={values.instructions?.objetivo || ""}
-              onChange={(e) => setInstructionField("objetivo", e.target.value)}
-              className="w-full min-h-[90px] rounded-md border border-white/20 bg-transparent p-2"
-              disabled={submitting}
-            />
-          </div>
-          <div className="space-y-2 md:col-span-2">
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium">Diretrizes</label>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={addDiretriz}
-                disabled={submitting}
-                className="text-xs"
-              >
-                + Adicionar Diretriz
-              </Button>
-            </div>
-            <div className="space-y-3">
-              {Object.entries(diretrizes).map(([key, value]) => {
-                // Debug: vamos ver o que está chegando aqui
-                if (typeof value === 'object') {
-                  console.error(`PROBLEMA ENCONTRADO - Diretriz "${key}" é um objeto:`, value);
-                }
-                
-                const safeValue = typeof value === 'string' ? value : 
-                  typeof value === 'object' && value !== null ? 
-                    JSON.stringify(value, null, 2) : 
-                    String(value || '');
-                
-                return (
-                  <div key={key} className="flex gap-2 items-start">
-                    <div className="flex-1 space-y-2">
-                      <Input
-                        value={key.startsWith('diretriz_') ? '' : key}
-                        onChange={(e) => updateDiretriz(key, e.target.value || key, safeValue)}
-                        placeholder="Nome da diretriz (ex: tom_comunicacao)"
-                        disabled={submitting}
-                        className="text-xs"
-                      />
-                      <textarea
-                        value={safeValue}
-                        onChange={(e) => updateDiretriz(key, key, e.target.value)}
-                        placeholder="Descrição da diretriz..."
-                        className="w-full min-h-[60px] rounded-md border border-white/20 bg-transparent p-2 text-sm"
-                        disabled={submitting}
-                      />
-                    </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => removeDiretriz(key)}
-                      disabled={submitting}
-                      className="text-red-500 hover:text-red-700 mt-1"
-                    >
-                      ×
-                    </Button>
-                  </div>
-                );
-              })}
-              {Object.keys(diretrizes).length === 0 && (
-                <div className="text-sm text-gray-500 italic">
-                  Nenhuma diretriz adicionada. Clique em "Adicionar Diretriz" para começar.
-                </div>
-              )}
-            </div>
-          </div>
+        <CardContent className="space-y-4">
+          <InstructionsSection
+            values={{
+              context: values.instructions?.context || (values.instructions as any)?.contexto || "",
+              objetivo: values.instructions?.objetivo || "",
+            }}
+            onChange={(k, v) => setInstructionField(k as any, v)}
+            submitting={submitting}
+          />
+          <DiretrizesSection
+            items={diretrizesList}
+            onAdd={addDiretriz}
+            onChangeKey={updateDiretrizKey}
+            onChangeField={updateDiretrizField}
+            onRemove={removeDiretriz}
+            submitting={submitting}
+          />
         </CardContent>
       </Card>
 
       <Card variant="glass">
         <CardHeader>
           <CardTitle>Parser (opcional)</CardTitle>
+          <CardDescription>Use um parser para estruturar a saída do agente com base em um JSON Schema.</CardDescription>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Nome</label>
-            <Input
-              value={values.parserName}
-              onChange={(e) => setValues((v) => ({ ...v, parserName: e.target.value }))}
-              placeholder="ex: message_data_parser"
-              disabled={submitting}
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Descrição</label>
-            <Input
-              value={values.parserDescription}
-              onChange={(e) => setValues((v) => ({ ...v, parserDescription: e.target.value }))}
-              placeholder="Descrição do parser"
-              disabled={submitting}
-            />
-          </div>
-          <div className="space-y-2 md:col-span-2">
-            <label className="text-sm font-medium">Schema (JSON)</label>
-            <textarea
-              value={values.parserSchema}
-              onChange={(e) => setValues((v) => ({ ...v, parserSchema: e.target.value }))}
-              className="w-full min-h-[140px] rounded-md border border-white/20 bg-transparent p-2 font-mono text-xs"
-              placeholder={`{\n  "type": "object",\n  "properties": {\n    "field": { "type": "string" }\n  }\n}`}
-              disabled={submitting}
-            />
-            {parsedSchema === "__invalid__" && (
-              <div className="text-xs text-red-500">JSON inválido</div>
-            )}
-          </div>
+        <CardContent>
+          <ParserSection
+            values={{
+              parserName: values.parserName,
+              parserDescription: values.parserDescription,
+              parserSchema: values.parserSchema,
+            }}
+            onChange={(patch) => setValues((v) => ({ ...v, ...patch }))}
+            submitting={submitting}
+            schemaInvalid={parsedSchema === "__invalid__"}
+          />
         </CardContent>
       </Card>
 
-      <div className="flex justify-end">
-        <Button type="submit" disabled={submitting || !canSubmit}>
-          {submitting ? (
-            <div className="flex items-center space-x-2">
-              <Loading size="sm" />
-              <span>Salvando...</span>
-            </div>
-          ) : (
-            <span>{submitLabel}</span>
-          )}
-        </Button>
+      <div className="sticky bottom-4 z-10">
+        <div className="flex justify-end rounded-2xl border border-input bg-background/80 backdrop-blur-md px-4 py-3 shadow-xl">
+          <Button type="submit" disabled={submitting || !canSubmit}>
+            {submitting ? (
+              <div className="flex items-center space-x-2">
+                <Loading size="sm" />
+                <span>Salvando...</span>
+              </div>
+            ) : (
+              <span>{submitLabel}</span>
+            )}
+          </Button>
+        </div>
       </div>
     </form>
   );

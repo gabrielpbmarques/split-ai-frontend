@@ -17,7 +17,7 @@ export function Loading({ size = 'md', className }: LoadingProps) {
     <div className={cn('flex items-center justify-center', className)}>
       <div
         className={cn(
-          'animate-spin rounded-full border-2 border-gray-300 border-t-blue-600 dark:border-gray-600 dark:border-t-blue-400',
+          'animate-spin rounded-full border-2 border-muted border-t-primary',
           sizeClasses[size]
         )}
       />

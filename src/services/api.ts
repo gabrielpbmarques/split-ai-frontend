@@ -6,6 +6,7 @@ import {
   AgentDetail,
   CreateAgentRequest,
   UpdateAgentRequest,
+  AgentListItem,
 } from '@/types';
 import CryptoJS from 'crypto-js';
 
@@ -97,8 +98,8 @@ class ApiService {
     return response.json();
   }
 
-  async listAgents(token: string): Promise<AgentDetail[]> {
-    const response = await fetch(`${AGI_BASE_URL}/agent`, {
+  async listAgents(token: string): Promise<AgentListItem[]> {
+    const response = await fetch(`${AGI_BASE_URL}/agent/list`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -112,7 +113,7 @@ class ApiService {
     }
 
     const json = await response.json();
-    return json.data as AgentDetail[];
+    return json as AgentListItem[];
   }
 
   async getAgent(idOrIdentifier: string, token: string): Promise<AgentDetail> {

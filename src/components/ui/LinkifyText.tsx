@@ -119,7 +119,7 @@ const LinkifyText: React.FC<LinkifyTextProps> = ({ text }) => {
               href={match[2]}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-500 hover:underline"
+              className="text-primary hover:underline underline-offset-2"
             >
               {match[1]}
             </a>
@@ -179,7 +179,7 @@ const LinkifyText: React.FC<LinkifyTextProps> = ({ text }) => {
               href={href}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-500 hover:underline"
+              className="text-primary hover:underline underline-offset-2"
             >
               {url}
             </a>

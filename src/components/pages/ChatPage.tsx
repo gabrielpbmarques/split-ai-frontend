@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Send, Bot, User, AlertCircle } from "lucide-react";
 import { ChatMessage } from "@/types";
 import OrbitalLoader from "@/components/ui/orbital-loader";
+import { AgentSelector } from "@/components/ui/agent-selector";
 
 export function ChatPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -17,6 +18,7 @@ export function ChatPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [mounted, setMounted] = useState(false);
+  const [selectedAgentId, setSelectedAgentId] = useState<string>("support");
 
   const { token, isAuthenticated } = useAuth();
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -37,7 +39,7 @@ export function ChatPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!inputValue.trim() || !token || !isAuthenticated) return;
+    if (!inputValue.trim() || !token || !isAuthenticated || !selectedAgentId) return;
 
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
@@ -126,7 +128,7 @@ export function ChatPage() {
     <div className="flex flex-col h-[calc(100vh-152px)] p-6">
       <Card variant="glass" className="flex flex-col h-full">
         <CardHeader className="pb-3 flex-shrink-0">
-          <CardTitle className="flex items-center space-x-3">
+          <CardTitle className="flex items-center space-x-3 mb-4">
             <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
               <Bot className="h-4 w-4 text-white" />
             </div>
@@ -134,6 +136,12 @@ export function ChatPage() {
               Chat com IA
             </span>
           </CardTitle>
+          
+          <AgentSelector
+            selectedAgentId={selectedAgentId}
+            onAgentChange={setSelectedAgentId}
+            className="min-w-[280px] cursor-pointer"
+          />
         </CardHeader>
 
         <CardContent className="relative flex flex-col flex-1 space-y-4 min-h-0">
@@ -145,10 +153,13 @@ export function ChatPage() {
               {messages.length === 0 && (
                 <>
                   <p className="text-lg font-medium">
-                    Inicie uma conversa com a IA
+                    {selectedAgentId ? "Inicie uma conversa com a IA" : "Selecione um agente para começar"}
                   </p>
                   <p className="text-sm opacity-70 mt-2">
-                    Digite sua mensagem abaixo para começar
+                    {selectedAgentId 
+                      ? "Digite sua mensagem abaixo para começar" 
+                      : "Escolha um agente no seletor acima"
+                    }
                   </p>
                 </>
               )}
@@ -244,7 +255,7 @@ export function ChatPage() {
             ) : (
               <Button
                 type="submit"
-                disabled={!inputValue.trim()}
+                disabled={!inputValue.trim() || !selectedAgentId}
                 className="rounded-2xl px-6 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Send className="h-4 w-4" />

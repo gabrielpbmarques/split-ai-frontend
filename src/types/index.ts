@@ -36,7 +36,10 @@ export interface ChatMessage {
 }
 
 export interface AIInstructionsDiretrizes {
-  [key: string]: string;
+  [key: string]: {
+    descricao: string;
+    detalhes: string;
+  };
 }
 
 export interface AIInstructions {
@@ -89,4 +92,10 @@ export interface UpdateAgentRequest {
     description: string;
     schema: any;
   } | null;
+}
+
+export interface AgentListItem {
+  id: string;
+  agent_identifier: string | null;
+  name: string;
 }
