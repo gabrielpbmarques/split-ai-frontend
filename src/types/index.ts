@@ -20,6 +20,7 @@ export interface LoginRequest {
 
 export interface QuestionRequest {
   question: string;
+  agentId: string;
 }
 
 export interface GenerateSourceRequest {

@@ -58,14 +58,14 @@ class ApiService {
     return response.json();
   }
 
-  async askQuestion(question: string, token: string): Promise<ReadableStream<Uint8Array> | null> {
+  async askQuestion(question: string, agentId: string, token: string): Promise<ReadableStream<Uint8Array> | null> {
     const response = await fetch(`${AGI_BASE_URL}/support/question`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify({ question } as QuestionRequest),
+      body: JSON.stringify({ question, agentId } as QuestionRequest),
     });
 
     if (!response.ok) {
@@ -73,6 +73,22 @@ class ApiService {
     }
 
     return response.body;
+  }
+
+  async createSession(agentId: string, token: string): Promise<void> {
+    const response = await fetch(`${AGI_BASE_URL}/session`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ agent_id: agentId }),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(error || 'Failed to create session');
+    }
   }
 
   async generateAgentSource(data: GenerateSourceRequest, token?: string): Promise<any> {

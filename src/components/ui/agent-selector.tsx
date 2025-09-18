@@ -67,20 +67,13 @@ export function AgentSelector({
 
   return (
     <div className={className}>
-      <div className="flex items-center space-x-2 mb-2">
-        <Bot className="h-4 w-4 text-muted-foreground" />
-        <label className="text-sm font-medium text-muted-foreground">
-          Selecionar Agente
-        </label>
-      </div>
-      
       <Select
         options={selectOptions}
         value={selectedAgentId || ""}
         onChange={(e) => onAgentChange(e.target.value)}
         placeholder={isLoading ? "Carregando agentes..." : "Escolha um agente"}
         disabled={isLoading || agents.length === 0}
-        className="rounded-2xl bg-white/5 backdrop-blur-sm border-white/20 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
+        className="rounded-2xl bg-white/5 backdrop-blur-sm border-white/20 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 cursor-pointer"
       />
       
       {!isLoading && agents.length === 0 && (

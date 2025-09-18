@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Send, Bot, User, AlertCircle } from "lucide-react";
+import { Send, Bot, User, AlertCircle, RefreshCcw } from "lucide-react";
 import { ChatMessage } from "@/types";
 import OrbitalLoader from "@/components/ui/orbital-loader";
 import { AgentSelector } from "@/components/ui/agent-selector";
@@ -19,6 +19,7 @@ export function ChatPage() {
   const [error, setError] = useState("");
   const [mounted, setMounted] = useState(false);
   const [selectedAgentId, setSelectedAgentId] = useState<string>("support");
+  const [isCreatingSession, setIsCreatingSession] = useState(false);
 
   const { token, isAuthenticated } = useAuth();
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -26,6 +27,20 @@ export function ChatPage() {
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleNewSession = async () => {
+    if (!token || !isAuthenticated || !selectedAgentId) return;
+    setIsCreatingSession(true);
+    setError("");
+    try {
+      await apiService.createSession(selectedAgentId, token);
+      setMessages([]);
+    } catch (err: any) {
+      setError(err.message || "Erro ao criar nova sessão");
+    } finally {
+      setIsCreatingSession(false);
+    }
   };
 
   useEffect(() => {
@@ -65,7 +80,7 @@ export function ChatPage() {
 
     try {
       abortControllerRef.current = new AbortController();
-      const stream = await apiService.askQuestion(userMessage.content, token);
+      const stream = await apiService.askQuestion(userMessage.content, selectedAgentId, token);
 
       if (!stream) {
         throw new Error("Não foi possível obter resposta do servidor");
@@ -137,11 +152,23 @@ export function ChatPage() {
             </span>
           </CardTitle>
           
-          <AgentSelector
-            selectedAgentId={selectedAgentId}
-            onAgentChange={setSelectedAgentId}
-            className="min-w-[280px] cursor-pointer"
-          />
+          <div className="flex items-center gap-3">
+            <AgentSelector
+              selectedAgentId={selectedAgentId}
+              onAgentChange={setSelectedAgentId}
+              className="min-w-[280px] cursor-pointer"
+            />
+            <Button
+              type="button"
+              onClick={handleNewSession}
+              disabled={!selectedAgentId || isLoading || isCreatingSession}
+              variant="outline"
+              className="rounded-2xl px-4"
+           >
+              <RefreshCcw className="h-4 w-4 mr-2" />
+              Nova sessão
+            </Button>
+          </div>
         </CardHeader>
 
         <CardContent className="relative flex flex-col flex-1 space-y-4 min-h-0">
