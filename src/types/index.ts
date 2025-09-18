@@ -36,18 +36,11 @@ export interface ChatMessage {
   timestamp: Date;
 }
 
-export interface AIInstructionsDiretrizes {
-  [key: string]: {
-    descricao: string;
-    detalhes: string;
-  };
-}
-
 export interface AIInstructions {
   contexto?: string;
   context?: string;
   objetivo?: string;
-  diretrizes?: AIInstructionsDiretrizes;
+  diretrizes?: string[];
 }
 
 export interface AgentDetail {

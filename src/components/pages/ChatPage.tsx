@@ -18,7 +18,7 @@ export function ChatPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [mounted, setMounted] = useState(false);
-  const [selectedAgentId, setSelectedAgentId] = useState<string>("support");
+  const [selectedAgentId, setSelectedAgentId] = useState<string>("");
   const [isCreatingSession, setIsCreatingSession] = useState(false);
 
   const { token, isAuthenticated } = useAuth();

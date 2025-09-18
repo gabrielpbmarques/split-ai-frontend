@@ -44,49 +44,13 @@ export function AgentForm({ initial, submitting, error, submitLabel = "Salvar", 
     parserSchema: initial?.parser?.schema ? JSON.stringify(initial?.parser?.schema, null, 2) : "",
   });
 
-  type DiretrizObj = { descricao: string; detalhes: string };
-  type DiretrizItem = { id: string; key: string; descricao: string; detalhes: string };
-
-  const normalizeDiretrizes = (raw: any): Record<string, DiretrizObj> => {
-    if (!raw || typeof raw !== "object") return {};
-    const normalized: Record<string, DiretrizObj> = {};
-    Object.entries(raw).forEach(([key, value]) => {
-      if (typeof value === "string") {
-        let parsed: any = null;
-        try {
-          parsed = JSON.parse(value);
-        } catch {
-          parsed = null;
-        }
-        if (parsed && typeof parsed === "object") {
-          normalized[key] = {
-            descricao: String(parsed.descricao || parsed.description || ""),
-            detalhes: String(parsed.detalhes || parsed.details || ""),
-          };
-        } else {
-          normalized[key] = { descricao: "", detalhes: String(value || "") };
-        }
-      } else if (typeof value === "object" && value !== null) {
-        const obj = value as any;
-        normalized[key] = {
-          descricao: String(obj.descricao || obj.description || ""),
-          detalhes: String(obj.detalhes || obj.details || ""),
-        };
-      } else {
-        normalized[key] = { descricao: "", detalhes: String(value || "") };
-      }
-    });
-    return normalized;
-  };
+  type DiretrizItem = { id: string; text: string };
 
   const [diretrizesList, setDiretrizesList] = useState<DiretrizItem[]>(() => {
-    const norm = normalizeDiretrizes(initial?.instructions?.diretrizes);
-    return Object.entries(norm).map(([k, v], idx) => ({
-      id: `${k || "diretriz"}::${idx}`,
-      key: k,
-      descricao: v.descricao,
-      detalhes: v.detalhes,
-    }));
+    const list = Array.isArray(initial?.instructions?.diretrizes)
+      ? (initial?.instructions?.diretrizes as string[])
+      : [];
+    return list.map((txt, idx) => ({ id: `dir::${idx}`, text: String(txt || "") }));
   });
 
   useEffect(() => {
@@ -101,9 +65,10 @@ export function AgentForm({ initial, submitting, error, submitLabel = "Salvar", 
       parserDescription: initial?.parser?.description || "",
       parserSchema: initial?.parser?.schema ? JSON.stringify(initial?.parser?.schema, null, 2) : "",
     });
-    const norm = normalizeDiretrizes(initial?.instructions?.diretrizes);
-    const entries = Object.entries(norm);
-    setDiretrizesList(entries.map(([k, v], idx) => ({ id: `${k || "diretriz"}::${idx}`, key: k, descricao: v.descricao, detalhes: v.detalhes })));
+    const list = Array.isArray(initial?.instructions?.diretrizes)
+      ? (initial?.instructions?.diretrizes as string[])
+      : [];
+    setDiretrizesList(list.map((txt, idx) => ({ id: `dir::${idx}`, text: String(txt || "") })));
   }, [initial]);
 
   const parsedSchema = useMemo(() => {
@@ -133,26 +98,12 @@ export function AgentForm({ initial, submitting, error, submitLabel = "Salvar", 
   }, [values.name, values.temperature]);
 
   const buildPayload = (): CreateAgentRequest | UpdateAgentRequest => {
-    const diretrizesPayload: Record<string, { descricao: string; detalhes: string }> = {};
-    const used: Record<string, number> = {};
-    diretrizesList.forEach((item) => {
-      let baseKey = (item.key || "diretriz").trim() || "diretriz";
-      if (baseKey.startsWith("diretriz_") && (item.key || "").trim() === "") {
-        baseKey = "diretriz";
-      }
-      if (used[baseKey] === undefined && !(baseKey in diretrizesPayload)) {
-        used[baseKey] = 0;
-      } else {
-        used[baseKey] = (used[baseKey] || 0) + 1;
-      }
-      const finalKey = used[baseKey] ? `${baseKey}_${used[baseKey]}` : baseKey;
-      diretrizesPayload[finalKey] = { descricao: item.descricao || "", detalhes: item.detalhes || "" };
-    });
-
     const instructions: AIInstructions = {
       ...(values.instructions || {}),
       context: values.instructions?.context || (values.instructions as any)?.contexto || "",
-      diretrizes: Object.keys(diretrizesPayload).length > 0 ? (diretrizesPayload as any) : undefined,
+      diretrizes: diretrizesList
+        .map((d) => (d.text || "").trim())
+        .filter((s) => s.length > 0),
     };
 
     const base = {
@@ -205,15 +156,11 @@ export function AgentForm({ initial, submitting, error, submitLabel = "Salvar", 
 
   const addDiretriz = () => {
     const id = `tmp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-    setDiretrizesList((prev) => [...prev, { id, key: "", descricao: "", detalhes: "" }]);
+    setDiretrizesList((prev) => [...prev, { id, text: "" }]);
   };
 
-  const updateDiretrizKey = (id: string, newKey: string) => {
-    setDiretrizesList((prev) => prev.map((item) => (item.id === id ? { ...item, key: newKey } : item)));
-  };
-
-  const updateDiretrizField = (id: string, field: keyof DiretrizObj, value: string) => {
-    setDiretrizesList((prev) => prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)));
+  const updateDiretrizText = (id: string, text: string) => {
+    setDiretrizesList((prev) => prev.map((item) => (item.id === id ? { ...item, text } : item)));
   };
 
   const removeDiretriz = (id: string) => {
@@ -283,8 +230,7 @@ export function AgentForm({ initial, submitting, error, submitLabel = "Salvar", 
           <DiretrizesSection
             items={diretrizesList}
             onAdd={addDiretriz}
-            onChangeKey={updateDiretrizKey}
-            onChangeField={updateDiretrizField}
+            onChangeText={updateDiretrizText}
             onRemove={removeDiretriz}
             submitting={submitting}
           />
@@ -345,3 +291,4 @@ export function AgentForm({ initial, submitting, error, submitLabel = "Salvar", 
     </form>
   );
 }
+
