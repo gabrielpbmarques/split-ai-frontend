@@ -1,4 +1,12 @@
-import { AuthResponse, LoginRequest, QuestionRequest, GenerateSourceRequest } from '@/types';
+import {
+  AuthResponse,
+  LoginRequest,
+  QuestionRequest,
+  GenerateSourceRequest,
+  AgentDetail,
+  CreateAgentRequest,
+  UpdateAgentRequest,
+} from '@/types';
 import CryptoJS from 'crypto-js';
 
 const AUTH_BASE_URL = process.env.NEXT_PUBLIC_AUTH_SERVICE_URL || 'http://localhost:4001';
@@ -84,6 +92,78 @@ class ApiService {
     if (!response.ok) {
       const error = await response.text();
       throw new Error(error || 'Failed to generate agent source');
+    }
+
+    return response.json();
+  }
+
+  async listAgents(token: string): Promise<AgentDetail[]> {
+    const response = await fetch(`${AGI_BASE_URL}/agent`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(error || 'Failed to list agents');
+    }
+
+    const json = await response.json();
+    return json.data as AgentDetail[];
+  }
+
+  async getAgent(idOrIdentifier: string, token: string): Promise<AgentDetail> {
+    const response = await fetch(`${AGI_BASE_URL}/agent/${idOrIdentifier}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(error || 'Failed to get agent');
+    }
+
+    const json = await response.json();
+    return json.data as AgentDetail;
+  }
+
+  async createAgent(data: CreateAgentRequest, token: string): Promise<{ id: string }> {
+    const response = await fetch(`${AGI_BASE_URL}/agent/create`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(error || 'Failed to create agent');
+    }
+
+    return response.json();
+  }
+
+  async updateAgent(idOrIdentifier: string, data: UpdateAgentRequest, token: string): Promise<{ id: string }> {
+    const response = await fetch(`${AGI_BASE_URL}/agent/${idOrIdentifier}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(error || 'Failed to update agent');
     }
 
     return response.json();

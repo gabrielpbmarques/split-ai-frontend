@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { MessageCircle, Upload, LogIn } from 'lucide-react';
+import { MessageCircle, Upload, LogIn, Bot } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 const navigationItems = [
@@ -12,6 +12,12 @@ const navigationItems = [
     href: '/chat',
     label: 'Chat IA',
     icon: MessageCircle,
+    requiresAuth: true
+  },
+  {
+    href: '/agents',
+    label: 'Agentes',
+    icon: Bot,
     requiresAuth: true
   },
   {
@@ -99,3 +105,4 @@ export function Navigation() {
     </nav>
   );
 }
+

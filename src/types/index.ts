@@ -35,10 +35,58 @@ export interface ChatMessage {
   timestamp: Date;
 }
 
-export type AgentType = 'support' | 'message_data_parser' | 'extract_document';
+export interface AIInstructionsDiretrizes {
+  [key: string]: string;
+}
 
-export interface Agent {
-  id: AgentType;
+export interface AIInstructions {
+  contexto?: string;
+  context?: string;
+  objetivo?: string;
+  diretrizes?: AIInstructionsDiretrizes;
+}
+
+export interface AgentDetail {
+  id: string;
   name: string;
-  description: string;
+  agentIdentifier: string | null;
+  model: string | null;
+  temperature: number | null;
+  withHistory: boolean;
+  parser: {
+    name: string | null;
+    description: string | null;
+    schema: any;
+  } | null;
+  instructions: AIInstructions | null;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+}
+
+export interface CreateAgentRequest {
+  name: string;
+  agentIdentifier?: string | null;
+  model?: string | null;
+  temperature?: number | null;
+  withHistory?: boolean;
+  instructions: AIInstructions;
+  parser?: {
+    name: string;
+    description: string;
+    schema: any;
+  } | null;
+}
+
+export interface UpdateAgentRequest {
+  name?: string;
+  agentIdentifier?: string | null;
+  model?: string | null;
+  temperature?: number | null;
+  withHistory?: boolean;
+  instructions?: AIInstructions;
+  parser?: {
+    name: string;
+    description: string;
+    schema: any;
+  } | null;
 }

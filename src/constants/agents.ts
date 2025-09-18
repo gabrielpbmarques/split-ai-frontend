@@ -1,6 +1,10 @@
-import { Agent } from '@/types';
+type AvailableAgent = {
+  id: string;
+  name: string;
+  description: string;
+};
 
-export const AVAILABLE_AGENTS: Agent[] = [
+export const AVAILABLE_AGENTS: AvailableAgent[] = [
   {
     id: 'support',
     name: 'Suporte',

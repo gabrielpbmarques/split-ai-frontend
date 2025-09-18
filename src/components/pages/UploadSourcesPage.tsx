@@ -10,7 +10,7 @@ import { Select } from '@/components/ui/Select';
 import { Loading } from '@/components/ui/Loading';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Upload, Link, CheckCircle, AlertCircle } from 'lucide-react';
-import { AVAILABLE_AGENTS } from '@/constants/agents';
+import { AgentDetail } from '@/types';
 
 export function UploadSourcesPage() {
   const [url, setUrl] = useState('');
@@ -19,8 +19,25 @@ export function UploadSourcesPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  const [agents, setAgents] = useState<AgentDetail[]>([]);
+  const [loadingAgents, setLoadingAgents] = useState(false);
   
   const { token } = useAuth();
+
+  React.useEffect(() => {
+    const load = async () => {
+      if (!token) return;
+      try {
+        setLoadingAgents(true);
+        const list = await apiService.listAgents(token);
+        setAgents(list);
+      } catch (e: any) {
+      } finally {
+        setLoadingAgents(false);
+      }
+    };
+    load();
+  }, [token]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,11 +70,8 @@ export function UploadSourcesPage() {
   };
 
   const agentOptions = [
-    { value: '', label: 'Selecione um agente (opcional)' },
-    ...AVAILABLE_AGENTS.map(agent => ({
-      value: agent.id,
-      label: agent.name
-    }))
+    { value: '', label: loadingAgents ? 'Carregando agentes...' : 'Selecione um agente (opcional)' },
+    ...agents.map(agent => ({ value: agent.id, label: agent.name }))
   ];
 
   return (
@@ -148,10 +162,10 @@ export function UploadSourcesPage() {
             {agentId && (
               <div className="p-3 bg-muted rounded-lg">
                 <h4 className="font-medium text-sm mb-1">
-                  {AVAILABLE_AGENTS.find(a => a.id === agentId)?.name}
+                  {agents.find(a => a.id === agentId)?.name}
                 </h4>
                 <p className="text-xs text-muted-foreground">
-                  {AVAILABLE_AGENTS.find(a => a.id === agentId)?.description}
+                  {agents.find(a => a.id === agentId)?.agentIdentifier || 'Agente customizado'}
                 </p>
               </div>
             )}
