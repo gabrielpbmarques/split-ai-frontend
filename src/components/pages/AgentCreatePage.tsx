@@ -31,7 +31,7 @@ export function AgentCreatePage() {
 
   return (
     <div className="container mx-auto py-8 px-6">
-      <Card variant="glass" className="max-w-3xl mx-auto">
+      <Card variant="glass" className="mx-auto">
         <CardHeader>
           <CardTitle>Novo Agente</CardTitle>
         </CardHeader>
