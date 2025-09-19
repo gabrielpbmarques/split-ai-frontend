@@ -76,7 +76,7 @@ export function LoginPage() {
             Login
           </CardTitle>
           <CardDescription className="text-center text-muted-foreground">
-            Entre com suas credenciais para acessar o Anthor AGI
+            Entre com suas credenciais para acessar a IA
           </CardDescription>
         </CardHeader>
         
