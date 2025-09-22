@@ -1,9 +1,8 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import { useAuth } from '@/contexts/AuthContext';
-import { apiService } from '@/services/api';
+import { useAgents } from '@/contexts/AgentsContext';
 import { AgentDetail, AgentListItem } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,28 +11,10 @@ import { Loading } from '@/components/ui/Loading';
 import { Plus, Pencil, AlertCircle } from 'lucide-react';
 
 export function AgentsListPage() {
-  const { token, isAuthenticated } = useAuth();
-  const [agents, setAgents] = useState<AgentListItem[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  const load = async () => {
-    if (!token || !isAuthenticated) return;
-    try {
-      setLoading(true);
-      setError('');
-      const list = await apiService.listAgents(token);
-      setAgents(list);
-    } catch (e: any) {
-      setError(e.message || 'Erro ao carregar agentes');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    load();
-  }, [token, isAuthenticated]);
+  const { agents: agentsData, loading, error, refreshAgents } = useAgents();
+  
+  // Garantir que agents seja sempre um array
+  const agents = agentsData || [];
 
   return (
     <div className="container mx-auto py-8 px-6">

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { apiService } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAgents } from '@/contexts/AgentsContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,25 +20,12 @@ export function UploadSourcesPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
-  const [agents, setAgents] = useState<AgentListItem[]>([]);
-  const [loadingAgents, setLoadingAgents] = useState(false);
   
   const { token } = useAuth();
-
-  React.useEffect(() => {
-    const load = async () => {
-      if (!token) return;
-      try {
-        setLoadingAgents(true);
-        const list = await apiService.listAgents(token);
-        setAgents(list);
-      } catch (e: any) {
-      } finally {
-        setLoadingAgents(false);
-      }
-    };
-    load();
-  }, [token]);
+  const { agents: agentsData, loading: loadingAgents } = useAgents();
+  
+  // Garantir que agents seja sempre um array
+  const agents = agentsData || [];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

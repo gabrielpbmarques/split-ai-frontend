@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { AgentsProvider } from "@/contexts/AgentsContext";
 import { Header } from "@/components/layout/Header";
 import { Navigation } from "@/components/layout/Navigation";
 
@@ -23,13 +24,15 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider>
           <AuthProvider>
-            <div className="min-h-screen bg-background mesh-bg">
-              <Header />
-              <Navigation />
-              <main className="container mx-auto p-4 relative z-10">
-                {children}
-              </main>
-            </div>
+            <AgentsProvider>
+              <div className="min-h-screen bg-background mesh-bg">
+                <Header />
+                <Navigation />
+                <main className="container mx-auto p-4 relative z-10">
+                  {children}
+                </main>
+              </div>
+            </AgentsProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>
