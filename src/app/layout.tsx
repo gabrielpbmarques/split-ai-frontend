@@ -23,10 +23,10 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider>
           <AuthProvider>
-            <div className="min-h-screen bg-background">
+            <div className="min-h-screen bg-background mesh-bg">
               <Header />
               <Navigation />
-              <main className="container mx-auto p-4">
+              <main className="container mx-auto p-4 relative z-10">
                 {children}
               </main>
             </div>

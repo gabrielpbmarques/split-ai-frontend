@@ -32,18 +32,39 @@
     --chart-4: 220 30% 65%;
     --chart-5: 220 80% 25%;
     
+    /* Design Tokens - Liquid Glass System */
+    --liquid-glass-bg-primary: rgba(255, 255, 255, 0.08);
+    --liquid-glass-bg-secondary: rgba(255, 255, 255, 0.12);
+    --liquid-glass-bg-tertiary: rgba(255, 255, 255, 0.16);
+    --liquid-glass-border: rgba(255, 255, 255, 0.2);
+    --liquid-glass-border-strong: rgba(255, 255, 255, 0.3);
+    --liquid-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    --liquid-glass-shadow-strong: 0 20px 40px rgba(0, 0, 0, 0.15);
+    --liquid-glass-blur: 20px;
+    --liquid-glass-blur-strong: 40px;
+    
+    /* Gradientes Liquid */
+    --liquid-gradient-primary: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%);
+    --liquid-gradient-secondary: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+    --liquid-gradient-accent: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(239, 68, 68, 0.1) 100%);
+    
+    /* Mesh Backgrounds */
+    --mesh-bg-primary: radial-gradient(at 40% 20%, rgba(59, 130, 246, 0.3) 0px, transparent 50%), 
+                       radial-gradient(at 80% 0%, rgba(147, 51, 234, 0.3) 0px, transparent 50%), 
+                       radial-gradient(at 0% 50%, rgba(16, 185, 129, 0.2) 0px, transparent 50%);
+    
     /* Sombras refinadas */
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 1px rgba(0, 0, 0, 0.03);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
     
-    /* Efeitos de vidro */
+    /* Efeitos de vidro (legacy) */
     --glass-background: rgba(255, 255, 255, 0.7);
     --glass-border: rgba(255, 255, 255, 0.5);
     --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
     
-    --radius: 0.5rem
+    --radius: 1rem
   }
   .dark {
     /* Paleta escura - baseada em Blue Navy e Off-White */
@@ -74,13 +95,34 @@
     --chart-4: 220 50% 85%;
     --chart-5: 220 90% 45%;
     
+    /* Design Tokens - Liquid Glass System (Dark Mode) */
+    --liquid-glass-bg-primary: rgba(0, 0, 0, 0.2);
+    --liquid-glass-bg-secondary: rgba(0, 0, 0, 0.3);
+    --liquid-glass-bg-tertiary: rgba(0, 0, 0, 0.4);
+    --liquid-glass-border: rgba(255, 255, 255, 0.1);
+    --liquid-glass-border-strong: rgba(255, 255, 255, 0.2);
+    --liquid-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    --liquid-glass-shadow-strong: 0 20px 40px rgba(0, 0, 0, 0.4);
+    --liquid-glass-blur: 20px;
+    --liquid-glass-blur-strong: 40px;
+    
+    /* Gradientes Liquid (Dark Mode) */
+    --liquid-gradient-primary: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(147, 51, 234, 0.2) 100%);
+    --liquid-gradient-secondary: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(59, 130, 246, 0.2) 100%);
+    --liquid-gradient-accent: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(239, 68, 68, 0.2) 100%);
+    
+    /* Mesh Backgrounds (Dark Mode) */
+    --mesh-bg-primary: radial-gradient(at 40% 20%, rgba(59, 130, 246, 0.15) 0px, transparent 50%), 
+                       radial-gradient(at 80% 0%, rgba(147, 51, 234, 0.15) 0px, transparent 50%), 
+                       radial-gradient(at 0% 50%, rgba(16, 185, 129, 0.1) 0px, transparent 50%);
+    
     /* Sombras refinadas para tema escuro */
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 1px rgba(0, 0, 0, 0.3);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
     
-    /* Efeitos de vidro para tema escuro */
+    /* Efeitos de vidro para tema escuro (legacy) */
     --glass-background: rgba(30, 58, 138, 0.7);
     --glass-border: rgba(30, 58, 138, 0.5);
     --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
@@ -170,5 +212,102 @@
   }
   .shadow-xl {
     box-shadow: var(--shadow-xl);
+  }
+  
+  /* Liquid Glass Components */
+  .liquid-glass {
+    background: var(--liquid-glass-bg-primary);
+    backdrop-filter: blur(var(--liquid-glass-blur));
+    -webkit-backdrop-filter: blur(var(--liquid-glass-blur));
+    border: 1px solid var(--liquid-glass-border);
+    box-shadow: var(--liquid-glass-shadow);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .liquid-glass-strong {
+    background: var(--liquid-glass-bg-secondary);
+    backdrop-filter: blur(var(--liquid-glass-blur-strong));
+    -webkit-backdrop-filter: blur(var(--liquid-glass-blur-strong));
+    border: 1px solid var(--liquid-glass-border-strong);
+    box-shadow: var(--liquid-glass-shadow-strong);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .liquid-glass-tertiary {
+    background: var(--liquid-glass-bg-tertiary);
+    backdrop-filter: blur(var(--liquid-glass-blur));
+    -webkit-backdrop-filter: blur(var(--liquid-glass-blur));
+    border: 1px solid var(--liquid-glass-border-strong);
+    box-shadow: var(--liquid-glass-shadow);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .liquid-glass:hover {
+    background: var(--liquid-glass-bg-secondary);
+    border-color: var(--liquid-glass-border-strong);
+    transform: translateY(-2px);
+  }
+  
+  .liquid-glass-strong:hover {
+    background: var(--liquid-glass-bg-tertiary);
+    transform: translateY(-2px);
+  }
+  
+  /* Liquid Gradients */
+  .liquid-gradient-primary {
+    background: var(--liquid-gradient-primary);
+  }
+  
+  .liquid-gradient-secondary {
+    background: var(--liquid-gradient-secondary);
+  }
+  
+  .liquid-gradient-accent {
+    background: var(--liquid-gradient-accent);
+  }
+  
+  /* Mesh Background */
+  .mesh-bg {
+    background: var(--mesh-bg-primary);
+  }
+  
+  /* Shimmer Effect */
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .shimmer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    animation: shimmer 2s infinite;
+  }
+  
+  /* Liquid Morphing */
+  .liquid-morph {
+    animation: liquidMorph 4s ease-in-out infinite;
+  }
+  
+  /* Glass Reflection */
+  .glass-reflect {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .glass-reflect::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    animation: glassReflect 3s ease-in-out infinite;
+    transform: skewX(-15deg);
   }
 }

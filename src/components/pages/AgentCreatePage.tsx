@@ -31,14 +31,21 @@ export function AgentCreatePage() {
 
   return (
     <div className="container mx-auto py-8 px-6">
-      <Card variant="glass" className="mx-auto">
+      <Card variant="liquid" className="mx-auto glass-reflect">
         <CardHeader>
-          <CardTitle>Novo Agente</CardTitle>
+          <CardTitle className="flex items-center space-x-3">
+            <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-green-500 to-blue-600 flex items-center justify-center shadow-lg">
+              <span className="text-white font-bold text-sm">+</span>
+            </div>
+            <span className="bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+              Novo Agente
+            </span>
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {error && (
-            <div className="mb-4">
-              <Alert variant="destructive">
+            <div className="mb-6">
+              <Alert variant="destructive" className="liquid-glass border-red-500/30">
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             </div>

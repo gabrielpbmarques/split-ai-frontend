@@ -41,7 +41,7 @@ export function Navigation() {
 
   if (!mounted) {
     return (
-      <nav className="sticky top-16 z-40 w-full border-b border-white/10 bg-white/5 backdrop-blur-xl supports-[backdrop-filter]:bg-white/5 dark:border-white/20 dark:bg-white/10 transition-all duration-300">
+      <nav className="sticky top-16 z-40 w-full liquid-glass border-0 transition-all duration-300">
         <div className="container flex h-14 items-center px-6">
           <div className="flex space-x-2"></div>
         </div>
@@ -51,13 +51,13 @@ export function Navigation() {
 
   if (!isAuthenticated && pathname !== '/login') {
     return (
-      <nav className="sticky top-16 z-40 w-full border-b border-white/10 bg-white/5 backdrop-blur-xl supports-[backdrop-filter]:bg-white/5 dark:border-white/20 dark:bg-white/10 transition-all duration-300">
+      <nav className="sticky top-16 z-40 w-full liquid-glass border-0 transition-all duration-300">
         <div className="container flex h-14 items-center px-6">
           <Link
             href="/login"
             className={cn(
               'flex items-center space-x-2 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200',
-              'text-muted-foreground hover:text-foreground hover:bg-white/10 dark:hover:bg-white/15 hover:scale-105 hover:shadow-lg backdrop-blur-sm'
+              'text-muted-foreground hover:text-foreground liquid-glass hover:liquid-glass-strong hover:scale-105 hover:shadow-lg'
             )}
           >
             <LogIn className="h-4 w-4" />
@@ -71,7 +71,7 @@ export function Navigation() {
   if (filteredItems.length === 0) return null;
 
   return (
-    <nav className="sticky top-16 z-40 w-full border-b border-white/10 bg-white/5 backdrop-blur-xl supports-[backdrop-filter]:bg-white/5 dark:border-white/20 dark:bg-white/10 transition-all duration-300">
+    <nav className="sticky top-16 z-40 w-full liquid-glass border-0 transition-all duration-300">
       <div className="container flex h-14 items-center px-6">
         <div className="flex space-x-2">
           {filteredItems.map((item) => {
@@ -83,10 +83,10 @@ export function Navigation() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  'flex items-center space-x-2 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 backdrop-blur-sm relative overflow-hidden group',
+                  'flex items-center space-x-2 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 relative overflow-hidden group',
                   isActive
-                    ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-foreground border border-blue-500/30 shadow-lg'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-white/10 dark:hover:bg-white/15 hover:scale-105 hover:shadow-lg'
+                    ? 'liquid-glass-strong text-foreground border border-blue-500/30 shadow-neon'
+                    : 'text-muted-foreground hover:text-foreground liquid-glass hover:liquid-glass-strong hover:scale-105 hover:shadow-lg'
                 )}
               >
                 <Icon className={cn(
@@ -95,7 +95,7 @@ export function Navigation() {
                 )} />
                 <span className="relative z-10">{item.label}</span>
                 {isActive && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-xl" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-xl shimmer" />
                 )}
               </Link>
             );

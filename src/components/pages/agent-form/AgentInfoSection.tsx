@@ -38,7 +38,7 @@ export function AgentInfoSection({
       </div>
 
       {/* Card: Identificação */}
-      <section className="rounded-xl border p-4 md:p-5">
+      <section className="rounded-xl liquid-glass p-4 md:p-5">
         <div className="mb-4">
           <h4 className="text-sm font-medium">Identificação</h4>
           <p className="text-xs text-muted-foreground">
@@ -58,11 +58,7 @@ export function AgentInfoSection({
               placeholder="Ex: Suporte"
               disabled={submitting}
               required
-              className={
-                errors?.name
-                  ? "border-red-500/60 focus-visible:ring-red-500/40"
-                  : undefined
-              }
+              className="rounded-xl liquid-glass border-0 focus:liquid-glass-strong focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
               aria-invalid={Boolean(errors?.name) || undefined}
               aria-describedby={errors?.name ? "agent-name-error" : undefined}
             />

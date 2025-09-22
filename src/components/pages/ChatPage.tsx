@@ -141,7 +141,7 @@ export function ChatPage() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-152px)] p-6">
-      <Card variant="glass" className="flex flex-col h-full">
+      <Card variant="liquid" className="flex flex-col h-full glass-reflect">
         <CardHeader className="pb-3 flex-shrink-0">
           <CardTitle className="flex items-center space-x-3 mb-4">
             <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
@@ -162,7 +162,7 @@ export function ChatPage() {
               type="button"
               onClick={handleNewSession}
               disabled={!selectedAgentId || isLoading || isCreatingSession}
-              variant="outline"
+              variant="liquid"
               className="rounded-2xl px-4"
            >
               <RefreshCcw className="h-4 w-4 mr-2" />
@@ -216,7 +216,7 @@ export function ChatPage() {
                     className={`flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-200 ${
                       message.isUser
                         ? "bg-gradient-to-br from-blue-500 to-purple-600 text-white"
-                        : "bg-white/10 backdrop-blur-xl border border-white/20"
+                        : "liquid-glass border-0"
                     }`}
                   >
                     {message.isUser ? (
@@ -230,7 +230,7 @@ export function ChatPage() {
                     className={`rounded-2xl px-4 py-3 shadow-lg transition-all duration-200 hover:shadow-xl ${
                       message.isUser
                         ? "bg-gradient-to-br from-blue-500 to-purple-600 text-white"
-                        : "backdrop-blur-2xl border border-white/40 dark:border-white/10 bg-white/80 dark:bg-black/70 text-foreground"
+                        : "liquid-glass-strong border-0 text-foreground"
                     }`}
                   >
                     {!message.isUser && message.content === "" && isLoading ? (
@@ -266,7 +266,7 @@ export function ChatPage() {
                 onChange={(e) => setInputValue(e.target.value)}
                 placeholder="Digite sua mensagem..."
                 disabled={isLoading}
-                className="rounded-2xl bg-white/5 backdrop-blur-sm border-white/20 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
+                className="rounded-2xl liquid-glass border-0 focus:liquid-glass-strong focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
               />
             </div>
 
@@ -283,7 +283,8 @@ export function ChatPage() {
               <Button
                 type="submit"
                 disabled={!inputValue.trim() || !selectedAgentId}
-                className="rounded-2xl px-6 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                variant="liquid-primary"
+                className="rounded-2xl px-6 transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Send className="h-4 w-4" />
               </Button>

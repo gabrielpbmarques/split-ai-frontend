@@ -8,36 +8,12 @@ import {
   UpdateAgentRequest,
   AgentListItem,
 } from '@/types';
-import CryptoJS from 'crypto-js';
 
-const AUTH_BASE_URL = process.env.NEXT_PUBLIC_AUTH_SERVICE_URL || 'http://localhost:4001';
+const AUTH_BASE_URL = process.env.NEXT_PUBLIC_AUTH_SERVICE_URL || 'http://localhost:4000';
 const AGI_BASE_URL = process.env.NEXT_PUBLIC_AGI_SERVICE_URL || 'http://localhost:4000';
 
 class ApiService {
-  private generateDeviceFingerprint(): string {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    ctx?.fillText('fingerprint', 2, 2);
-    
-    const fingerprint = [
-      navigator.userAgent,
-      navigator.language,
-      screen.width + 'x' + screen.height,
-      new Date().getTimezoneOffset(),
-      canvas.toDataURL()
-    ].join('|');
-    
-    return btoa(fingerprint).slice(0, 32);
-  }
-
-  private encryptPassword(password: string): string {
-    return CryptoJS.MD5(password).toString();
-  }
-
   async login(email: string, password: string): Promise<AuthResponse> {
-    const deviceFingerprint = this.generateDeviceFingerprint();
-    const encryptedPassword = this.encryptPassword(password);
-    
     const response = await fetch(`${AUTH_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: {
@@ -45,17 +21,21 @@ class ApiService {
       },
       body: JSON.stringify({
         email,
-        password: encryptedPassword,
-        deviceFingerprint
+        password,
       } as LoginRequest),
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Login failed');
+      const error = await response.text();
+      throw new Error(error || 'Login failed');
     }
 
-    return response.json();
+    const json = await response.json();
+    const data = json?.data ?? { token: json?.token, user: json?.user };
+    return {
+      data,
+      message: json?.message ?? '',
+    } as AuthResponse;
   }
 
   async askQuestion(question: string, agentId: string, token: string): Promise<ReadableStream<Uint8Array> | null> {

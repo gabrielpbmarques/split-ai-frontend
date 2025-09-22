@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils"
 const Card = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & {
-    variant?: "default" | "glass" | "elevated"
+    variant?: "default" | "glass" | "elevated" | "liquid"
   }
 >(({ className, variant = "default", ...props }, ref) => (
   <div
@@ -15,7 +15,8 @@ const Card = React.forwardRef<
       {
         "border bg-card shadow-sm hover:shadow-md": variant === "default",
         "border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl hover:bg-white/10 hover:shadow-3xl dark:border-white/20 dark:bg-white/10": variant === "glass",
-        "border-0 bg-card shadow-lg hover:shadow-xl hover:-translate-y-1": variant === "elevated"
+        "border-0 bg-card shadow-lg hover:shadow-xl hover:-translate-y-1": variant === "elevated",
+        "liquid-glass shadow-glass hover:liquid-glass-strong hover:-translate-y-1": variant === "liquid"
       },
       className
     )}

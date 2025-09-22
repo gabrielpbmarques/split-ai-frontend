@@ -10,7 +10,7 @@ import { Select } from '@/components/ui/Select';
 import { Loading } from '@/components/ui/Loading';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Upload, Link, CheckCircle, AlertCircle } from 'lucide-react';
-import { AgentDetail } from '@/types';
+import { AgentDetail, AgentListItem } from '@/types';
 
 export function UploadSourcesPage() {
   const [url, setUrl] = useState('');
@@ -19,7 +19,7 @@ export function UploadSourcesPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
-  const [agents, setAgents] = useState<AgentDetail[]>([]);
+  const [agents, setAgents] = useState<AgentListItem[]>([]);
   const [loadingAgents, setLoadingAgents] = useState(false);
   
   const { token } = useAuth();
@@ -76,7 +76,7 @@ export function UploadSourcesPage() {
 
   return (
     <div className="container mx-auto py-8 px-6">
-      <Card variant="glass" className="max-w-2xl mx-auto">
+      <Card variant="liquid" className="max-w-2xl mx-auto glass-reflect">
         <CardHeader>
           <CardTitle className="flex items-center space-x-3">
             <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-green-500 to-blue-600 flex items-center justify-center shadow-lg">
@@ -84,22 +84,19 @@ export function UploadSourcesPage() {
             </div>
             <span className="bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">Upload de Fontes de Conhecimento</span>
           </CardTitle>
-          <CardDescription>
-            Adicione novas fontes de conhecimento para treinar os agentes de IA
-          </CardDescription>
         </CardHeader>
         
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <Alert variant="destructive">
+              <Alert variant="destructive" className="liquid-glass border-red-500/30">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
             
             {success && (
-              <Alert className="border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
+              <Alert className="liquid-glass border-green-500/30 bg-green-500/10 text-green-600">
                 <CheckCircle className="h-4 w-4" />
                 <AlertDescription>{success}</AlertDescription>
               </Alert>
@@ -117,7 +114,7 @@ export function UploadSourcesPage() {
                   placeholder="https://exemplo.com/documento"
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 rounded-xl liquid-glass border-0 focus:liquid-glass-strong"
                   disabled={isLoading}
                   required
                 />
@@ -137,6 +134,7 @@ export function UploadSourcesPage() {
                 placeholder="ex: documentação, artigo, manual"
                 value={sourceType}
                 onChange={(e) => setSourceType(e.target.value)}
+                className="rounded-xl liquid-glass border-0 focus:liquid-glass-strong"
                 disabled={isLoading}
               />
               <p className="text-xs text-muted-foreground">
@@ -160,19 +158,20 @@ export function UploadSourcesPage() {
             </div>
 
             {agentId && (
-              <div className="p-3 bg-muted rounded-lg">
+              <div className="p-4 liquid-glass rounded-xl">
                 <h4 className="font-medium text-sm mb-1">
                   {agents.find(a => a.id === agentId)?.name}
                 </h4>
                 <p className="text-xs text-muted-foreground">
-                  {agents.find(a => a.id === agentId)?.agentIdentifier || 'Agente customizado'}
+                  {agents.find(a => a.id === agentId)?.agent_identifier || 'Agente customizado'}
                 </p>
               </div>
             )}
             
             <Button
               type="submit"
-              className="w-full"
+              variant="liquid-primary"
+              className="w-full rounded-xl"
               disabled={isLoading || !url.trim()}
             >
               {isLoading ? (

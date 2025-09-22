@@ -15,7 +15,7 @@ export interface AuthResponse {
 export interface LoginRequest {
   email: string;
   password: string;
-  deviceFingerprint: string;
+  deviceFingerprint?: string;
 }
 
 export interface QuestionRequest {

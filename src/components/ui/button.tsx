@@ -5,7 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-xl text-sm font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-60 active:scale-95",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-xl text-sm font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-60 active:scale-95 relative overflow-hidden group",
   {
     variants: {
       variant: {
@@ -19,6 +19,9 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 hover:shadow-md hover:scale-[1.02]",
         ghost: "hover:bg-accent hover:text-accent-foreground hover:scale-105",
         link: "text-primary underline-offset-4 hover:underline hover:scale-[1.01]",
+        liquid: "liquid-glass text-foreground hover:liquid-glass-strong hover:-translate-y-1 shadow-glass border-0",
+        "liquid-primary": "liquid-glass bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-foreground hover:liquid-glass-strong hover:-translate-y-1 shadow-neon border-0",
+        "liquid-glow": "liquid-glass-strong text-foreground hover:liquid-glass-tertiary hover:-translate-y-1 shadow-neon border-0 shimmer",
       },
       size: {
         default: "h-11 px-5",

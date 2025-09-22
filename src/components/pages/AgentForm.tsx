@@ -177,21 +177,23 @@ export function AgentForm({ initial, submitting, error, submitLabel = "Salvar", 
   return (
     <form ref={formRef} onSubmit={handleSubmit} className="space-y-8 mx-auto">
       {/* Page header */}
-      <header className="space-y-1">
-        <h2 className="text-xl font-semibold">Configurar Agente</h2>
-        <p className="text-sm text-muted-foreground">
+      <header className="space-y-2 mb-8">
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          Configurar Agente
+        </h2>
+        <p className="text-muted-foreground">
           Defina identidade, instruções e (opcionalmente) um parser para a saída.
         </p>
       </header>
 
       {(error || localError) && (
-        <Alert variant="destructive" role="alert" aria-live="polite">
+        <Alert variant="destructive" role="alert" aria-live="polite" className="liquid-glass border-red-500/30">
           <AlertDescription>{error || localError}</AlertDescription>
         </Alert>
       )}
 
       {/* Card: Informações do Agente */}
-      <Card variant="glass" className="shadow-xl">
+      <Card variant="liquid" className="glass-reflect">
         <CardHeader className="pb-2">
           <CardTitle className="text-base">Informações do Agente</CardTitle>
           <CardDescription>Dados básicos e comportamento.</CardDescription>
@@ -213,7 +215,7 @@ export function AgentForm({ initial, submitting, error, submitLabel = "Salvar", 
       </Card>
 
       {/* Card: Instruções & Diretrizes */}
-      <Card variant="glass" className="shadow-xl">
+      <Card variant="liquid" className="glass-reflect">
         <CardHeader className="pb-2">
           <CardTitle className="text-base">Instruções</CardTitle>
           <CardDescription>Contexto, objetivo e regras de atuação.</CardDescription>
@@ -238,7 +240,7 @@ export function AgentForm({ initial, submitting, error, submitLabel = "Salvar", 
       </Card>
 
       {/* Card: Parser */}
-      <Card variant="glass" className="shadow-xl">
+      <Card variant="liquid" className="glass-reflect">
         <CardHeader className="pb-2">
           <div className="flex items-start justify-between gap-3">
             <div>
@@ -268,14 +270,14 @@ export function AgentForm({ initial, submitting, error, submitLabel = "Salvar", 
 
       {/* Sticky footer */}
       <div className="sticky bottom-4 z-10">
-        <div className="mx-auto max-w-4xl rounded-2xl border border-input bg-background/80 backdrop-blur-md px-4 py-3 shadow-xl">
+        <div className="mx-auto max-w-4xl rounded-2xl liquid-glass-strong px-4 py-3 shadow-liquid">
           <div className="flex items-center justify-center gap-3">
             {!canSubmit && (
               <span className="text-xs text-muted-foreground">
                 Verifique os campos obrigatórios e o JSON do parser.
               </span>
             )}
-            <Button className="w-[60%]" size="lg" type="submit" disabled={submitting || !canSubmit}>
+            <Button variant="liquid-primary" className="w-[60%]" size="lg" type="submit" disabled={submitting || !canSubmit}>
               {submitting ? (
                 <div className="flex items-center gap-2">
                   <Loading size="sm" />
