@@ -32,25 +32,24 @@ export function ParserSection({
   const schemaLen = (values.parserSchema || "").length;
 
   return (
-    <div className="space-y-6 md:col-span-2">
-      {/* Header */}
-      <div>
-        <h3 className="text-base font-semibold">Parser de Dados</h3>
+    <div className="space-y-8">
+      <div className="space-y-1">
+        <h4 className="text-base font-medium text-foreground">Parser de Dados</h4>
         <p className="text-sm text-muted-foreground">
           Defina nome, descrição e o schema JSON que o agente vai usar para interpretar dados.
         </p>
       </div>
 
-      {/* Card: Identificação */}
-      <section className="rounded-xl border p-4 md:p-5">
-        <div className="mb-4">
-          <h4 className="text-sm font-medium">Identificação</h4>
+      {/* Seção: Identificação */}
+      <div className="space-y-4">
+        <div className="space-y-1">
+          <h5 className="text-sm font-medium">Identificação</h5>
           <p className="text-xs text-muted-foreground">
             Informações básicas do parser.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div className="space-y-2">
             <label htmlFor={nameId} className="text-sm font-medium">
               Nome
@@ -61,6 +60,7 @@ export function ParserSection({
               onChange={(e) => onChange({ parserName: e.target.value })}
               placeholder="ex: message_data_parser"
               disabled={submitting}
+              className="liquid-glass border-0 focus:liquid-glass-strong focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
             />
             <p className="text-xs text-muted-foreground">
               Identificador curto (slug) do parser.
@@ -77,17 +77,18 @@ export function ParserSection({
               onChange={(e) => onChange({ parserDescription: e.target.value })}
               placeholder="Descrição do parser"
               disabled={submitting}
+              className="liquid-glass border-0 focus:liquid-glass-strong focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
             />
             <p className="text-xs text-muted-foreground">
               Resumo objetivo do que o parser extrai.
             </p>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* Card: Schema */}
-      <section className="rounded-xl border p-4 md:p-5">
-        <div className="mb-3 flex items-start justify-between gap-3">
+      {/* Seção: Schema */}
+      <div className="space-y-4">
+        <div className="flex items-start justify-between gap-3">
           <div className="space-y-1">
             <label htmlFor={schemaId} className="text-sm font-medium">
               Schema (JSON)
@@ -100,7 +101,7 @@ export function ParserSection({
           {/* Status + ações */}
           <div className="flex items-center gap-3">
             <span
-              className={`rounded-full px-2 py-1 text-xs ${
+              className={`rounded-full px-3 py-1 text-xs font-medium ${
                 schemaInvalid
                   ? "bg-red-500/10 text-red-600"
                   : "bg-emerald-500/10 text-emerald-600"
@@ -112,7 +113,7 @@ export function ParserSection({
 
             <Button
               type="button"
-              variant="outline"
+              variant="liquid"
               size="sm"
               disabled={submitting}
               onClick={() => {
@@ -135,10 +136,10 @@ export function ParserSection({
             aria-describedby={`${schemaHelpId} ${schemaInvalid ? schemaErrId : ""}`}
             value={values.parserSchema}
             onChange={(e) => onChange({ parserSchema: e.target.value })}
-            className={`w-full min-h-[200px] rounded-md border bg-transparent p-3 font-mono text-xs leading-5 ${
+            className={`w-full min-h-[200px] rounded-lg liquid-glass border-0 p-3 font-mono text-xs leading-5 transition-all duration-200 ${
               schemaInvalid
-                ? "border-red-500/60 focus:outline-none focus:ring-2 focus:ring-red-500/30"
-                : "border-white/20 focus:outline-none focus:ring-2 focus:ring-white/20"
+                ? "focus:ring-2 focus:ring-red-500/30"
+                : "focus:liquid-glass-strong focus:ring-2 focus:ring-blue-500/20"
             }`}
             placeholder={`{\n  "type": "object",\n  "properties": {\n    "field": { "type": "string" }\n  },\n  "required": ["field"]\n}`}
             disabled={submitting}
@@ -155,7 +156,7 @@ export function ParserSection({
             </span>
           </div>
         </div>
-      </section>
+      </div>
     </div>
   );
 }

@@ -5,7 +5,6 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AgentsProvider } from "@/contexts/AgentsContext";
 import { Header } from "@/components/layout/Header";
-import { Navigation } from "@/components/layout/Navigation";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,7 +26,6 @@ export default function RootLayout({
             <AgentsProvider>
               <div className="min-h-screen bg-background mesh-bg">
                 <Header />
-                <Navigation />
                 <main className="container mx-auto p-4 relative z-10">
                   {children}
                 </main>

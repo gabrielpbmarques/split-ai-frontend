@@ -22,18 +22,17 @@ export function DiretrizesSection({
   submitting,
 }: DiretrizesSectionProps) {
   return (
-    <div className="space-y-6 md:col-span-2">
-      {/* Header */}
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-base font-semibold">Diretrizes</h3>
+        <div className="space-y-1">
+          <h4 className="text-base font-medium text-foreground">Diretrizes</h4>
           <p className="text-sm text-muted-foreground">
             Liste regras claras de comportamento e estilo do agente.
           </p>
         </div>
         <Button
           type="button"
-          variant="outline"
+          variant="liquid"
           size="sm"
           onClick={onAdd}
           disabled={submitting}
@@ -43,9 +42,8 @@ export function DiretrizesSection({
         </Button>
       </div>
 
-      {/* Card principal */}
-      <section className="rounded-xl border p-4 md:p-5">
-        <div className="mb-3 flex items-baseline gap-2">
+      <div className="space-y-4">
+        <div className="flex items-baseline gap-2">
           <span className="text-sm font-medium">Itens</span>
           <span className="text-xs text-muted-foreground">{items.length}</span>
         </div>
@@ -58,10 +56,10 @@ export function DiretrizesSection({
               <div
                 key={item.id}
                 role="listitem"
-                className="rounded-lg border p-3 md:p-4"
+                className="liquid-glass rounded-lg p-4"
               >
                 <div className="flex items-start gap-3">
-                  <div className="flex-1 space-y-1">
+                  <div className="flex-1 space-y-2">
                     <label htmlFor={textId} className="text-sm font-medium">
                       Diretriz
                     </label>
@@ -71,7 +69,7 @@ export function DiretrizesSection({
                       onChange={(e) => onChangeText(item.id, e.target.value)}
                       placeholder="Ex: Responda sempre de forma clara e objetiva, evitando jargões."
                       disabled={submitting}
-                      className="min-h-[84px] text-sm"
+                      className="min-h-[84px] text-sm liquid-glass border-0 focus:liquid-glass-strong focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
                     />
                   </div>
 
@@ -92,13 +90,12 @@ export function DiretrizesSection({
           })}
 
           {items.length === 0 && (
-            <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
-              Nenhuma diretriz adicionada. Clique em <span className="font-medium">“Adicionar diretriz”</span> para começar.
+            <div className="liquid-glass rounded-lg border-dashed border-2 border-border/30 p-6 text-center text-sm text-muted-foreground">
+              Nenhuma diretriz adicionada. Clique em <span className="font-medium">&quot;Adicionar diretriz&quot;</span> para começar.
             </div>
           )}
         </div>
-      </section>
+      </div>
     </div>
   );
 }
-

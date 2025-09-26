@@ -26,27 +26,17 @@ export function AgentInfoSection({
   errors,
 }: AgentInfoSectionProps) {
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-base font-semibold">Configurações do Agente</h3>
+    <div className="space-y-8">
+      {/* Seção: Identificação */}
+      <div className="space-y-4">
+        <div className="space-y-1">
+          <h4 className="text-base font-medium text-foreground">Identificação</h4>
           <p className="text-sm text-muted-foreground">
-            Defina identificação, modelo e comportamento de saída.
-          </p>
-        </div>
-      </div>
-
-      {/* Card: Identificação */}
-      <section className="rounded-xl liquid-glass p-4 md:p-5">
-        <div className="mb-4">
-          <h4 className="text-sm font-medium">Identificação</h4>
-          <p className="text-xs text-muted-foreground">
             Como o agente aparece para usuários e integrações.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div className="space-y-2 md:col-span-2">
             <label className="text-sm font-medium" htmlFor="agent-name">
               Nome *
@@ -58,7 +48,7 @@ export function AgentInfoSection({
               placeholder="Ex: Suporte"
               disabled={submitting}
               required
-              className="rounded-xl liquid-glass border-0 focus:liquid-glass-strong focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
+              className="liquid-glass border-0 focus:liquid-glass-strong focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
               aria-invalid={Boolean(errors?.name) || undefined}
               aria-describedby={errors?.name ? "agent-name-error" : undefined}
             />
@@ -79,6 +69,7 @@ export function AgentInfoSection({
               onChange={(e) => onChange({ agentIdentifier: e.target.value })}
               placeholder="ex: support"
               disabled={submitting}
+              className="liquid-glass border-0 focus:liquid-glass-strong focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
             />
             <p className="text-xs text-muted-foreground">
               Usado em rotas e integrações (slug/ID técnico).
@@ -95,20 +86,21 @@ export function AgentInfoSection({
               onChange={(e) => onChange({ model: e.target.value })}
               placeholder="ex: gpt-4o-mini"
               disabled={submitting}
+              className="liquid-glass border-0 focus:liquid-glass-strong focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
             />
             <p className="text-xs text-muted-foreground">
               Provider e variante do LLM utilizado.
             </p>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* Card: Comportamento */}
-      <section className="rounded-xl border p-4 md:p-5">
-        <div className="mb-4 flex items-start justify-between gap-4">
-          <div>
-            <h4 className="text-sm font-medium">Comportamento</h4>
-            <p className="text-xs text-muted-foreground">
+      {/* Seção: Comportamento */}
+      <div className="space-y-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-1">
+            <h4 className="text-base font-medium text-foreground">Comportamento</h4>
+            <p className="text-sm text-muted-foreground">
               Ajuste a criatividade e o uso de contexto.
             </p>
           </div>
@@ -120,16 +112,14 @@ export function AgentInfoSection({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {/* Temperatura ocupa 2 colunas no desktop */}
-          <div className="md:col-span-2 space-y-2">
+          <div className="md:col-span-2 space-y-3">
             <label className="text-sm font-medium" htmlFor="agent-temperature">
               Temperatura
             </label>
             <div className="flex items-center gap-3">
-              {/* Mantendo o mesmo componente Slider */}
               <Slider
-                /* mantendo compatibilidade com o valor string do estado */
                 value={values.temperature || "0"}
                 onChange={(e) =>
                   onChange({
@@ -168,8 +158,8 @@ export function AgentInfoSection({
             </p>
           </div>
 
-          {/* Preferências rápidas */}
-          <div className="rounded-lg border p-3">
+          {/* Preferências */}
+          <div className="liquid-glass rounded-lg p-4">
             <div className="flex items-center gap-2">
               <input
                 id="withHistory"
@@ -177,7 +167,7 @@ export function AgentInfoSection({
                 checked={values.withHistory}
                 onChange={(e) => onChange({ withHistory: e.target.checked })}
                 disabled={submitting}
-                className="h-4 w-4"
+                className="h-4 w-4 rounded border-border/50 text-blue-600 focus:ring-2 focus:ring-blue-500/20"
               />
               <label htmlFor="withHistory" className="text-sm font-medium">
                 Manter histórico
@@ -188,7 +178,7 @@ export function AgentInfoSection({
             </p>
           </div>
         </div>
-      </section>
+      </div>
     </div>
   );
 }
