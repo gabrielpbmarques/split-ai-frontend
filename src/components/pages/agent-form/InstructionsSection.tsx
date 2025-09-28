@@ -19,39 +19,15 @@ export function InstructionsSection({
   onChange,
   submitting,
 }: InstructionsSectionProps) {
-  const contextId = "agent-context";
-  const contextDescId = "agent-context-desc";
-  const objetivoId = "agent-objetivo";
-  const objetivoDescId = "agent-objetivo-desc";
-
-  const len = (s?: string) => (s ? s.length : 0);
-
   return (
     <div className="space-y-6">
-      <div className="space-y-1">
-        <h4 className="text-base font-medium text-foreground">Instruções do Agente</h4>
-        <p className="text-sm text-muted-foreground">
-          Descreva o cenário de atuação e a meta principal.
-        </p>
-      </div>
-
       <div className="grid grid-cols-1 gap-6">
-        {/* Contexto */}
         <div className="space-y-2">
-          <div className="flex items-baseline justify-between">
-            <label htmlFor={contextId} className="text-sm font-medium">
-              Contexto
-            </label>
-            <span className="text-xs text-muted-foreground tabular-nums">
-              {len(values.context)} caracteres
-            </span>
-          </div>
-          <p id={contextDescId} className="text-xs text-muted-foreground">
-            Explique o cenário onde o agente atuará.
-          </p>
+          <label htmlFor="agent-context" className="text-sm font-medium">
+            Contexto
+          </label>
           <Textarea
-            id={contextId}
-            aria-describedby={contextDescId}
+            id="agent-context"
             value={values.context || ""}
             onChange={(e) => onChange("context", e.target.value)}
             placeholder="Ex: Suporte ao cliente para dúvidas de faturamento"
@@ -60,22 +36,12 @@ export function InstructionsSection({
           />
         </div>
 
-        {/* Objetivo */}
         <div className="space-y-2">
-          <div className="flex items-baseline justify-between">
-            <label htmlFor={objetivoId} className="text-sm font-medium">
-              Objetivo
-            </label>
-            <span className="text-xs text-muted-foreground tabular-nums">
-              {len(values.objetivo)} caracteres
-            </span>
-          </div>
-          <p id={objetivoDescId} className="text-xs text-muted-foreground">
-            Defina a meta principal do agente.
-          </p>
+          <label htmlFor="agent-objetivo" className="text-sm font-medium">
+            Objetivo
+          </label>
           <Textarea
-            id={objetivoId}
-            aria-describedby={objetivoDescId}
+            id="agent-objetivo"
             value={values.objetivo || ""}
             onChange={(e) => onChange("objetivo", e.target.value)}
             placeholder="Ex: Resolver tickets em até 3 interações"

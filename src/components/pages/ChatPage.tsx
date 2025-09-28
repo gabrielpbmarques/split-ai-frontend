@@ -80,7 +80,12 @@ export function ChatPage() {
 
     try {
       abortControllerRef.current = new AbortController();
-      const stream = await apiService.askQuestion(userMessage.content, selectedAgentId, token);
+      const stream = await apiService.askQuestion(
+        userMessage.content,
+        selectedAgentId,
+        token,
+        abortControllerRef.current.signal,
+      );
 
       if (!stream) {
         throw new Error("Não foi possível obter resposta do servidor");
@@ -100,6 +105,17 @@ export function ChatPage() {
           prev.map((msg) =>
             msg.id === aiMessage.id
               ? { ...msg, content: msg.content + chunk }
+              : msg
+          )
+        );
+      }
+
+      const flush = decoder.decode();
+      if (flush) {
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === aiMessage.id
+              ? { ...msg, content: msg.content + flush }
               : msg
           )
         );

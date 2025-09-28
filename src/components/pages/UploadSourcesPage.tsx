@@ -6,12 +6,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAgents } from '@/contexts/AgentsContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select } from '@/components/ui/Select';
 import { Loading } from '@/components/ui/Loading';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Upload, Link, CheckCircle, AlertCircle } from 'lucide-react';
-import { AgentDetail, AgentListItem } from '@/types';
 
 export function UploadSourcesPage() {
   const [url, setUrl] = useState('');
@@ -20,6 +19,8 @@ export function UploadSourcesPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  const [file, setFile] = useState<File | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   
   const { token } = useAuth();
   const { agents: agentsData, loading: loadingAgents } = useAgents();
@@ -30,8 +31,8 @@ export function UploadSourcesPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!url.trim()) {
-      setError('Por favor, insira uma URL válida');
+    if (!file && !url.trim()) {
+      setError('Envie um arquivo ou informe uma URL válida');
       return;
     }
 
@@ -40,20 +41,57 @@ export function UploadSourcesPage() {
     setSuccess('');
 
     try {
-      const result = await apiService.generateAgentSource({
-        url: url.trim(),
-        sourceType: sourceType || undefined,
-        agentId: agentId || undefined
-      }, token || undefined);
+      if (file) {
+        const form = new FormData();
+        form.append('file', file);
+        if (sourceType) form.append('sourceType', sourceType);
+        if (agentId) form.append('agentId', agentId);
+        await apiService.uploadAgentSource(form, token || undefined);
+      } else {
+        await apiService.generateAgentSource({
+          url: url.trim(),
+          sourceType: sourceType || undefined,
+          agentId: agentId || undefined
+        }, token || undefined);
+      }
 
       setSuccess('Fonte de conhecimento processada com sucesso!');
       setUrl('');
       setSourceType('');
       setAgentId('');
+      setFile(null);
+      setIsDragging(false);
     } catch (err: any) {
       setError(err.message || 'Erro ao processar fonte de conhecimento');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const onDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const files = e.dataTransfer.files;
+    if (files && files[0]) {
+      setFile(files[0]);
+      setUrl('');
+    }
+  };
+
+  const onDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const onDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files[0]) {
+      setFile(files[0]);
+      setUrl('');
     }
   };
 
@@ -103,13 +141,41 @@ export function UploadSourcesPage() {
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
                   className="pl-10 rounded-xl liquid-glass border-0 focus:liquid-glass-strong"
-                  disabled={isLoading}
-                  required
+                  disabled={isLoading || !!file}
                 />
               </div>
               <p className="text-xs text-muted-foreground">
                 Insira a URL completa do documento ou página web
               </p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Ou envie um arquivo</label>
+              <div
+                onDrop={onDrop}
+                onDragOver={onDragOver}
+                onDragLeave={onDragLeave}
+                className={`rounded-xl border-0 liquid-glass focus:liquid-glass-strong ${isDragging ? 'ring-2 ring-blue-500/20 liquid-glass-strong' : ''}`}
+              >
+                <div className="p-6 flex flex-col items-center justify-center text-center space-y-2">
+                  <Upload className="h-5 w-5 text-muted-foreground" />
+                  <div className="text-sm text-muted-foreground">
+                    Arraste e solte um PDF aqui, ou
+                  </div>
+                  <div>
+                    <label className="inline-block px-3 py-1 rounded-xl bg-primary/10 text-primary cursor-pointer hover:bg-primary/20">
+                      Escolher arquivo
+                      <input type="file" accept="application/pdf" className="hidden" onChange={onFileChange} disabled={isLoading} />
+                    </label>
+                  </div>
+                  {file && (
+                    <div className="text-xs text-foreground">
+                      {file.name}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">Apenas PDF. Tamanho máximo 20MB.</p>
             </div>
             
             <div className="space-y-2">
@@ -160,7 +226,7 @@ export function UploadSourcesPage() {
               type="submit"
               variant="liquid-primary"
               className="w-full rounded-xl"
-              disabled={isLoading || !url.trim()}
+              disabled={isLoading || (!file && !url.trim())}
             >
               {isLoading ? (
                 <div className="flex items-center space-x-2">

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+ 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loading } from "@/components/ui/Loading";
 import { AgentInfoSection } from "@/components/pages/agent-form/AgentInfoSection";
@@ -35,15 +35,12 @@ type AgentFormProps = {
 const FORM_STEPS = [
   {
     title: "Configuração",
-    description: "Identidade e modelo",
   },
   {
     title: "Instruções",
-    description: "Contexto e diretrizes",
   },
   {
     title: "Parser",
-    description: "Schema opcional",
   },
 ] as const;
 
@@ -230,13 +227,6 @@ export function AgentForm({ initial, submitting, error, submitLabel = "Salvar", 
     setDiretrizesList((prev) => prev.filter((item) => item.id !== id));
   };
 
-  const schemaStatus =
-    parsedSchema === "__invalid__"
-      ? { label: "JSON inválido", cls: "bg-red-500/10 text-red-600" }
-      : values.parserSchema.trim().length
-      ? { label: "JSON válido", cls: "bg-emerald-500/10 text-emerald-600" }
-      : null;
-
   const isLastStep = currentStep === FORM_STEPS.length - 1;
 
   return (
@@ -245,9 +235,6 @@ export function AgentForm({ initial, submitting, error, submitLabel = "Salvar", 
         <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
           Configurar Agente
         </h2>
-        <p className="text-muted-foreground">
-          Defina identidade, instruções e (opcionalmente) um parser para a saída.
-        </p>
       </header>
 
       <StepIndicator steps={FORM_STEPS} currentStep={currentStep} />
@@ -260,10 +247,6 @@ export function AgentForm({ initial, submitting, error, submitLabel = "Salvar", 
 
       {currentStep === 0 && (
         <div className="space-y-6">
-          <div className="space-y-1">
-            <h3 className="text-lg font-semibold text-foreground">Informações do Agente</h3>
-            <p className="text-sm text-muted-foreground">Dados básicos e comportamento.</p>
-          </div>
           
           <AgentInfoSection
             values={{
@@ -287,10 +270,6 @@ export function AgentForm({ initial, submitting, error, submitLabel = "Salvar", 
 
       {currentStep === 1 && (
         <div className="space-y-6">
-          <div className="space-y-1">
-            <h3 className="text-lg font-semibold text-foreground">Instruções</h3>
-            <p className="text-sm text-muted-foreground">Contexto, objetivo e regras de atuação.</p>
-          </div>
           
           <div className="space-y-6">
             <InstructionsSection
@@ -314,17 +293,6 @@ export function AgentForm({ initial, submitting, error, submitLabel = "Salvar", 
 
       {currentStep === 2 && (
         <div className="space-y-6">
-          <div className="flex items-start justify-between gap-3">
-            <div className="space-y-1">
-              <h3 className="text-lg font-semibold text-foreground">Parser (opcional)</h3>
-              <p className="text-sm text-muted-foreground">Estruture a saída com um schema JSON.</p>
-            </div>
-            {schemaStatus && (
-              <span className={`rounded-full px-3 py-1 text-xs font-medium ${schemaStatus.cls}`}>
-                {schemaStatus.label}
-              </span>
-            )}
-          </div>
           
           <ParserSection
             values={{

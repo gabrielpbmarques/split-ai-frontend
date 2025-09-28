@@ -23,7 +23,7 @@ export function StepIndicator({ steps, currentStep }: StepIndicatorProps) {
           <li
             key={`${step.title}-${index}`}
             className={cn(
-              "relative flex items-start gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 transition-all",
+              "relative flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 transition-all",
               isActive && "border-blue-500/30 bg-blue-500/5 shadow-lg",
               isCompleted && !isActive && "border-emerald-500/30 bg-emerald-500/5"
             )}
@@ -41,9 +41,6 @@ export function StepIndicator({ steps, currentStep }: StepIndicatorProps) {
             </div>
             <div className="space-y-1">
               <p className="text-sm font-medium">{step.title}</p>
-              {step.description ? (
-                <p className="text-xs text-muted-foreground leading-5">{step.description}</p>
-              ) : null}
             </div>
           </li>
         );

@@ -27,15 +27,7 @@ export function AgentInfoSection({
 }: AgentInfoSectionProps) {
   return (
     <div className="space-y-8">
-      {/* Seção: Identificação */}
       <div className="space-y-4">
-        <div className="space-y-1">
-          <h4 className="text-base font-medium text-foreground">Identificação</h4>
-          <p className="text-sm text-muted-foreground">
-            Como o agente aparece para usuários e integrações.
-          </p>
-        </div>
-
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div className="space-y-2 md:col-span-2">
             <label className="text-sm font-medium" htmlFor="agent-name">
@@ -71,9 +63,6 @@ export function AgentInfoSection({
               disabled={submitting}
               className="liquid-glass border-0 focus:liquid-glass-strong focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
             />
-            <p className="text-xs text-muted-foreground">
-              Usado em rotas e integrações (slug/ID técnico).
-            </p>
           </div>
 
           <div className="space-y-2">
@@ -88,32 +77,12 @@ export function AgentInfoSection({
               disabled={submitting}
               className="liquid-glass border-0 focus:liquid-glass-strong focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
             />
-            <p className="text-xs text-muted-foreground">
-              Provider e variante do LLM utilizado.
-            </p>
           </div>
         </div>
       </div>
 
-      {/* Seção: Comportamento */}
       <div className="space-y-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-1">
-            <h4 className="text-base font-medium text-foreground">Comportamento</h4>
-            <p className="text-sm text-muted-foreground">
-              Ajuste a criatividade e o uso de contexto.
-            </p>
-          </div>
-          <div className="hidden text-right md:block">
-            <span className="text-xs text-muted-foreground">Temperatura</span>
-            <div className="text-lg font-semibold tabular-nums">
-              {Number(values.temperature || 0).toFixed(1)}
-            </div>
-          </div>
-        </div>
-
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          {/* Temperatura ocupa 2 colunas no desktop */}
           <div className="md:col-span-2 space-y-3">
             <label className="text-sm font-medium" htmlFor="agent-temperature">
               Temperatura
@@ -153,29 +122,20 @@ export function AgentInfoSection({
                 {errors.temperature}
               </p>
             )}
-            <p className="text-xs text-muted-foreground">
-              0 = respostas objetivas • 2 = respostas mais criativas.
-            </p>
           </div>
 
-          {/* Preferências */}
-          <div className="liquid-glass rounded-lg p-4">
-            <div className="flex items-center gap-2">
-              <input
-                id="withHistory"
-                type="checkbox"
-                checked={values.withHistory}
-                onChange={(e) => onChange({ withHistory: e.target.checked })}
-                disabled={submitting}
-                className="h-4 w-4 rounded border-border/50 text-blue-600 focus:ring-2 focus:ring-blue-500/20"
-              />
-              <label htmlFor="withHistory" className="text-sm font-medium">
-                Manter histórico
-              </label>
-            </div>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Reaproveita conversas anteriores como contexto.
-            </p>
+          <div className="flex items-center gap-2">
+            <input
+              id="withHistory"
+              type="checkbox"
+              checked={values.withHistory}
+              onChange={(e) => onChange({ withHistory: e.target.checked })}
+              disabled={submitting}
+              className="h-4 w-4 rounded border-border/50 text-blue-600 focus:ring-2 focus:ring-blue-500/20"
+            />
+            <label htmlFor="withHistory" className="text-sm font-medium">
+              Manter histórico
+            </label>
           </div>
         </div>
       </div>

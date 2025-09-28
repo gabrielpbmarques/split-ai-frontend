@@ -29,7 +29,6 @@ class ApiService {
       const error = await response.text();
       throw new Error(error || 'Login failed');
     }
-
     const json = await response.json();
     const data = json?.data ?? { token: json?.token, user: json?.user };
     return {
@@ -38,7 +37,12 @@ class ApiService {
     } as AuthResponse;
   }
 
-  async askQuestion(question: string, agentId: string, token: string): Promise<ReadableStream<Uint8Array> | null> {
+  async askQuestion(
+    question: string,
+    agentId: string,
+    token: string,
+    signal?: AbortSignal,
+  ): Promise<ReadableStream<Uint8Array> | null> {
     const response = await fetch(`${AGI_BASE_URL}/support/question`, {
       method: 'POST',
       headers: {
@@ -46,6 +50,7 @@ class ApiService {
         'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify({ question, agentId } as QuestionRequest),
+      signal,
     });
 
     if (!response.ok) {
@@ -89,6 +94,37 @@ class ApiService {
     if (!response.ok) {
       const error = await response.text();
       throw new Error(error || 'Failed to generate agent source');
+    }
+
+    const contentType = response.headers.get('content-type') || '';
+    if (response.status === 204) {
+      return null;
+    }
+    const text = await response.text();
+    if (!text) {
+      return null;
+    }
+    if (contentType.includes('application/json')) {
+      return JSON.parse(text);
+    }
+    return text;
+  }
+
+  async uploadAgentSource(form: FormData, token?: string): Promise<any> {
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${AGI_BASE_URL}/agent/generate-source/upload`, {
+      method: 'POST',
+      headers,
+      body: form,
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(error || 'Failed to upload agent source');
     }
 
     const contentType = response.headers.get('content-type') || '';
