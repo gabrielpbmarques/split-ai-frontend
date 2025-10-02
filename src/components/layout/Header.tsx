@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { LogOut, User, MessageCircle, Upload, LogIn, Bot, Menu, X } from 'lucide-react';
+import { LogOut, User, MessageCircle, Upload, LogIn, Bot, Menu, X, Plus, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navigationItems = [
@@ -20,6 +20,18 @@ const navigationItems = [
     href: '/agents',
     label: 'Agentes',
     icon: Bot,
+    requiresAuth: true
+  },
+  {
+    href: '/reports',
+    label: 'Reports',
+    icon: FileText,
+    requiresAuth: true
+  },
+  {
+    href: '/agents/new/attendant',
+    label: 'Novo Atendente',
+    icon: Plus,
     requiresAuth: true
   },
   {

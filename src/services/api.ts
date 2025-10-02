@@ -7,6 +7,8 @@ import {
   CreateAgentRequest,
   UpdateAgentRequest,
   AgentListItem,
+  ReportListItem,
+  ReportDetail,
 } from '@/types';
 
 const AUTH_BASE_URL = process.env.NEXT_PUBLIC_AUTH_SERVICE_URL || 'http://localhost:4000';
@@ -58,6 +60,31 @@ class ApiService {
     }
 
     return response.body;
+  }
+
+  async askAttendant(
+    question: string,
+    agentId: string,
+    token: string,
+    signal?: AbortSignal,
+  ): Promise<string> {
+    const response = await fetch(`${AGI_BASE_URL}/chat/attendant`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ question, agentId } as QuestionRequest),
+      signal,
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(error || 'Failed to send attendant question');
+    }
+
+    const text = await response.text();
+    return text;
   }
 
   async createSession(agentId: string, token: string): Promise<void> {
@@ -211,6 +238,74 @@ class ApiService {
     }
 
     return response.json();
+  }
+
+  async createAttendantAgent(data: CreateAgentRequest, token: string): Promise<{ id: string }> {
+    const response = await fetch(`${AGI_BASE_URL}/agent/create/attendant`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(error || 'Failed to create attendant agent');
+    }
+
+    return response.json();
+  }
+
+  async listReports(token: string, filters?: Partial<{ sentiment: 'positive' | 'negative' | 'neutral'; type: 'appointment' | 'order' | 'faq'; agent_id?: string; agent_ids?: string[]; created_at?: string | Date; }>): Promise<ReportListItem[]> {
+    const params = new URLSearchParams();
+    if (filters) {
+      Object.entries(filters).forEach(([k, v]) => {
+        if (v === undefined || v === null || v === '') return;
+        if (Array.isArray(v)) {
+          v.forEach((item) => params.append(k, String(item)));
+        } else {
+          params.append(k, String(v));
+        }
+      });
+    }
+    const url = `${AGI_BASE_URL}/report${params.toString() ? `?${params.toString()}` : ''}`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(error || 'Failed to list reports');
+    }
+
+    const json = await response.json();
+    if (Array.isArray(json)) return json as ReportListItem[];
+    if (Array.isArray(json?.data)) return json.data as ReportListItem[];
+    return [];
+  }
+
+  async getReport(id: string, token: string): Promise<ReportDetail> {
+    const response = await fetch(`${AGI_BASE_URL}/report/${id}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(error || 'Failed to get report');
+    }
+
+    const json = await response.json();
+    return (json?.data ?? json) as ReportDetail;
   }
 }
 

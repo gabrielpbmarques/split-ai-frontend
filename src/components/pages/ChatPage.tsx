@@ -20,6 +20,7 @@ export function ChatPage() {
   const [mounted, setMounted] = useState(false);
   const [selectedAgentId, setSelectedAgentId] = useState<string>("");
   const [isCreatingSession, setIsCreatingSession] = useState(false);
+  const [isAttendantAgent, setIsAttendantAgent] = useState(false);
 
   const { token, isAuthenticated } = useAuth();
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -51,6 +52,29 @@ export function ChatPage() {
     scrollToBottom();
   }, [messages]);
 
+  useEffect(() => {
+    let cancelled = false;
+    async function loadAgentDetails() {
+      if (!token || !isAuthenticated || !selectedAgentId) {
+        setIsAttendantAgent(false);
+        return;
+      }
+      try {
+        const details = await apiService.getAgent(selectedAgentId, token);
+        if (!cancelled) {
+          const parserName = details?.parser?.name || null;
+          setIsAttendantAgent(parserName === 'attendantParserFormatter');
+        }
+      } catch {
+        if (!cancelled) setIsAttendantAgent(false);
+      }
+    }
+    loadAgentDetails();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedAgentId, token, isAuthenticated]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -80,45 +104,58 @@ export function ChatPage() {
 
     try {
       abortControllerRef.current = new AbortController();
-      const stream = await apiService.askQuestion(
-        userMessage.content,
-        selectedAgentId,
-        token,
-        abortControllerRef.current.signal,
-      );
 
-      if (!stream) {
-        throw new Error("Não foi possível obter resposta do servidor");
-      }
-
-      const reader = stream.getReader();
-      const decoder = new TextDecoder();
-
-      while (true) {
-        const { done, value } = await reader.read();
-
-        if (done) break;
-
-        const chunk = decoder.decode(value, { stream: true });
-
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === aiMessage.id
-              ? { ...msg, content: msg.content + chunk }
-              : msg
-          )
+      if (isAttendantAgent) {
+        const fullText = await apiService.askAttendant(
+          userMessage.content,
+          selectedAgentId,
+          token,
+          abortControllerRef.current.signal,
         );
-      }
-
-      const flush = decoder.decode();
-      if (flush) {
         setMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === aiMessage.id
-              ? { ...msg, content: msg.content + flush }
-              : msg
-          )
+          prev.map((msg) => (msg.id === aiMessage.id ? { ...msg, content: fullText } : msg))
         );
+      } else {
+        const stream = await apiService.askQuestion(
+          userMessage.content,
+          selectedAgentId,
+          token,
+          abortControllerRef.current.signal,
+        );
+
+        if (!stream) {
+          throw new Error("Não foi possível obter resposta do servidor");
+        }
+
+        const reader = stream.getReader();
+        const decoder = new TextDecoder();
+
+        while (true) {
+          const { done, value } = await reader.read();
+
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === aiMessage.id
+                ? { ...msg, content: msg.content + chunk }
+                : msg
+            )
+          );
+        }
+
+        const flush = decoder.decode();
+        if (flush) {
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === aiMessage.id
+                ? { ...msg, content: msg.content + flush }
+                : msg
+            )
+          );
+        }
       }
     } catch (err: any) {
       if (err.name === "AbortError") return;

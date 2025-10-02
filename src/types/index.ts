@@ -93,3 +93,22 @@ export interface AgentListItem {
   agent_identifier: string | null;
   name: string;
 }
+
+export type ReportSentiment = 'positive' | 'negative' | 'neutral';
+export type ReportType = 'appointment' | 'order' | 'faq';
+
+export interface ReportDetail {
+  id: string;
+  session_id: string;
+  agent_id: string;
+  organization_id: string | null;
+  type: ReportType;
+  sentiment: ReportSentiment;
+  summary: string;
+  insights: string | null;
+  return: string | null;
+  created_at: string | Date;
+  updated_at: string | Date;
+}
+
+export interface ReportListItem extends ReportDetail {}
