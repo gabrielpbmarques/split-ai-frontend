@@ -1,18 +1,20 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
-import { useAgents } from '@/contexts/AgentsContext';
-import { AgentDetail, AgentListItem } from '@/types';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loading } from '@/components/ui/Loading';
-import { Plus, Pencil, AlertCircle } from 'lucide-react';
+import React from "react";
+import Link from "next/link";
+import { useAgents } from "@/contexts/AgentsContext";
+import { AgentDetail, AgentListItem } from "@/types";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Loading } from "@/components/ui/Loading";
+import { Plus, Pencil, AlertCircle } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function AgentsListPage() {
-  const { agents: agentsData, loading, error, refreshAgents } = useAgents();
-  
+  const { agents: agentsData, loading, error } = useAgents();
+  const { isAdmin } = useAuth();
+
   // Garantir que agents seja sempre um array
   const agents = agentsData || [];
 
@@ -22,16 +24,24 @@ export function AgentsListPage() {
         <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
           Agentes
         </h1>
-        <Link href="/agents/new">
-          <Button variant="liquid-primary" className="flex items-center space-x-2 rounded-2xl">
-            <Plus className="h-4 w-4" />
-            <span>Novo Agente</span>
-          </Button>
-        </Link>
+        {isAdmin && (
+          <Link href="/agents/new">
+            <Button
+              variant="liquid-primary"
+              className="flex items-center space-x-2 rounded-2xl"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Novo Agente</span>
+            </Button>
+          </Link>
+        )}
       </div>
 
       {error && (
-        <Alert variant="destructive" className="mb-6 liquid-glass border-red-500/30">
+        <Alert
+          variant="destructive"
+          className="mb-6 liquid-glass border-red-500/30"
+        >
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
         </Alert>
@@ -48,13 +58,17 @@ export function AgentsListPage() {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="py-10 flex justify-center"><Loading /></div>
-          ) : agents.length === 0 ? (
-            <div className="text-sm text-muted-foreground">Nenhum agente encontrado</div>
+            <div className="py-10 flex justify-center">
+              <Loading />
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {agents.map((a) => (
-                <Card key={a.id} variant="liquid" className="group hover:-translate-y-2 transition-all duration-300">
+                <Card
+                  key={a.id}
+                  variant="liquid"
+                  className="group hover:-translate-y-2 transition-all duration-300"
+                >
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
@@ -64,7 +78,7 @@ export function AgentsListPage() {
                         <div className="space-y-1 text-sm text-muted-foreground">
                           <div className="flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                            ID: {a.agent_identifier || 'Sem identifier'}
+                            ID: {a.agent_identifier || "Sem identifier"}
                           </div>
                         </div>
                       </div>
@@ -72,15 +86,23 @@ export function AgentsListPage() {
                         <span className="text-white font-bold text-xs">AI</span>
                       </div>
                     </div>
-                    
-                    <div className="flex justify-end">
-                      <Link href={`/agents/${a.id}`}>
-                        <Button variant="liquid" size="sm" className="flex items-center space-x-2 rounded-xl">
-                          <Pencil className="h-3 w-3" />
-                          <span>Editar</span>
-                        </Button>
-                      </Link>
-                    </div>
+
+                  {
+                    isAdmin && (
+                      <div className="flex justify-end">
+                        <Link href={`/agents/${a.id}`}>
+                          <Button
+                            variant="liquid"
+                            size="sm"
+                            className="flex items-center space-x-2 rounded-xl"
+                          >
+                            <Pencil className="h-3 w-3" />
+                            <span>Editar</span>
+                          </Button>
+                        </Link>
+                      </div>
+                    )
+                  }
                   </CardContent>
                 </Card>
               ))}

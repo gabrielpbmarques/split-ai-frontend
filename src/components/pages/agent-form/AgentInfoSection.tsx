@@ -7,7 +7,6 @@ import { Slider } from "@/components/ui/slider";
 type AgentInfoValues = {
   name: string;
   agentIdentifier: string;
-  model: string;
   temperature: string;
   withHistory: boolean;
 };
@@ -51,7 +50,7 @@ export function AgentInfoSection({
             )}
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2 md:col-span-2">
             <label className="text-sm font-medium" htmlFor="agent-identifier">
               Identifier
             </label>
@@ -60,20 +59,6 @@ export function AgentInfoSection({
               value={values.agentIdentifier}
               onChange={(e) => onChange({ agentIdentifier: e.target.value })}
               placeholder="ex: support"
-              disabled={submitting}
-              className="liquid-glass border-0 focus:liquid-glass-strong focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium" htmlFor="agent-model">
-              Modelo
-            </label>
-            <Input
-              id="agent-model"
-              value={values.model}
-              onChange={(e) => onChange({ model: e.target.value })}
-              placeholder="ex: gpt-4o-mini"
               disabled={submitting}
               className="liquid-glass border-0 focus:liquid-glass-strong focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
             />

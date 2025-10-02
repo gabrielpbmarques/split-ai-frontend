@@ -14,31 +14,36 @@ const navigationItems = [
     href: '/chat',
     label: 'Chat IA',
     icon: MessageCircle,
-    requiresAuth: true
+    requiresAuth: true,
+    adminOnly: false
   },
   {
     href: '/agents',
     label: 'Agentes',
     icon: Bot,
-    requiresAuth: true
+    requiresAuth: true,
+    adminOnly: false
   },
   {
     href: '/reports',
     label: 'Reports',
     icon: FileText,
-    requiresAuth: true
+    requiresAuth: true,
+    adminOnly: false
   },
   {
     href: '/agents/new/attendant',
     label: 'Novo Atendente',
     icon: Plus,
-    requiresAuth: true
+    requiresAuth: true,
+    adminOnly: false
   },
   {
     href: '/upload-sources',
     label: 'Upload Fontes',
     icon: Upload,
-    requiresAuth: false
+    requiresAuth: false,
+    adminOnly: false
   }
 ];
 
@@ -47,7 +52,7 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
-  const { user, logout, isAuthenticated } = useAuth();
+  const { user, logout, isAuthenticated, isAdmin } = useAuth();
 
   const handleLogout = () => {
     logout();
@@ -58,7 +63,7 @@ export function Header() {
     setMounted(true);
   }, []);
 
-  const filteredItems = navigationItems.filter(() => isAuthenticated);
+  const filteredItems = navigationItems.filter((item) => isAuthenticated && (!item.adminOnly || isAdmin));
 
   if (!mounted) {
     return (

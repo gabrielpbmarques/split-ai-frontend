@@ -1,6 +1,7 @@
 export interface User {
   id: string;
   email: string;
+  type: string;
   name?: string;
 }
 
@@ -63,7 +64,6 @@ export interface AgentDetail {
 export interface CreateAgentRequest {
   name: string;
   agentIdentifier?: string | null;
-  model?: string | null;
   temperature?: number | null;
   withHistory?: boolean;
   instructions: AIInstructions;

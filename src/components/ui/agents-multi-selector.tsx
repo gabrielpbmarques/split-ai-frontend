@@ -129,10 +129,6 @@ export const AgentsMultiSelector = memo(function AgentsMultiSelector({ selectedA
           </div>
           <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />
         </div>
-
-        {!loading && (agents || []).length === 0 && (
-          <p className="text-xs text-muted-foreground mt-1">Nenhum agente disponível</p>
-        )}
       </div>
 
       {isOpen && availableOptions.length > 0 && typeof document !== 'undefined' && createPortal(

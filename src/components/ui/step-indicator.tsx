@@ -15,7 +15,7 @@ type StepIndicatorProps = {
 
 export function StepIndicator({ steps, currentStep }: StepIndicatorProps) {
   return (
-    <ol className="grid gap-3 md:grid-cols-3">
+    <ol className={`grid gap-3 md:grid-cols-${steps.length}`}>
       {steps.map((step, index) => {
         const isActive = index === currentStep;
         const isCompleted = index < currentStep;

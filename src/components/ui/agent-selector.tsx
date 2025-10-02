@@ -46,12 +46,6 @@ export const AgentSelector = memo(function AgentSelector({
         disabled={isLoading || safeAgents.length === 0}
         className="rounded-2xl bg-white/5 backdrop-blur-sm border-white/20 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 cursor-pointer"
       />
-      
-      {!isLoading && safeAgents.length === 0 && (
-        <p className="text-xs text-muted-foreground mt-1">
-          Nenhum agente disponível
-        </p>
-      )}
     </div>
   );
 });

@@ -109,7 +109,6 @@ export function AttendantForm({ initial, submitting, error, submitLabel = "Salva
     const base: CreateAgentRequest = {
       name: values.name.trim(),
       agentIdentifier: values.agentIdentifier.trim() || null,
-      model: values.model.trim() || null,
       temperature: values.temperature === "" ? null : Number(values.temperature),
       withHistory: Boolean(values.withHistory),
       instructions,
@@ -209,7 +208,6 @@ export function AttendantForm({ initial, submitting, error, submitLabel = "Salva
             values={{
               name: values.name,
               agentIdentifier: values.agentIdentifier,
-              model: values.model,
               temperature: values.temperature,
               withHistory: values.withHistory,
             }}

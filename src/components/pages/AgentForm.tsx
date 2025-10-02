@@ -252,7 +252,6 @@ export function AgentForm({ initial, submitting, error, submitLabel = "Salvar", 
             values={{
               name: values.name,
               agentIdentifier: values.agentIdentifier,
-              model: values.model,
               temperature: values.temperature,
               withHistory: values.withHistory,
             }}
